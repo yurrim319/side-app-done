@@ -1,21 +1,182 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Side App</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quest - 테스트</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 12px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Side App</h1>
-        </header>
-        <main>
-            <!-- 메인 컨텐츠 영역 -->
-        </main>
+  <div class="header">
+    <h1>🎯 Quest 앱 테스트</h1>
+    <p>Day 1 - 기본 동작 확인</p>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>테스트 1: 입력 & 저장</h2>
+      <input type="text" id="test-input" placeholder="퀘스트 제목을 입력하세요">
+      <button onclick="testLocalStorage()">localStorage에 저장</button>
     </div>
-    <script src="js/storage.js"></script>
-    <script src="js/app.js"></script>
+
+    <div class="card">
+      <h2>테스트 2: 불러오기</h2>
+      <button onclick="testLoadData()">저장된 데이터 불러오기</button>
+    </div>
+
+    <div class="card">
+      <h2>테스트 3: 삭제</h2>
+      <button onclick="testClearData()">데이터 전체 삭제</button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // 테스트 1: localStorage 저장
+    function testLocalStorage() {
+      const input = document.getElementById('test-input').value;
+      
+      if (!input) {
+        showResult('❌ 텍스트를 입력해주세요!', 'error');
+        return;
+      }
+
+      // 기존 데이터 가져오기
+      let quests = JSON.parse(localStorage.getItem('quests')) || [];
+      
+      // 새 퀘스트 추가
+      quests.push({
+        id: Date.now(),
+        title: input,
+        points: 100,
+        completed: false,
+        createdAt: new Date().toISOString()
+      });
+
+      // 저장
+      localStorage.setItem('quests', JSON.stringify(quests));
+      
+      showResult(`✅ 저장 완료! "${input}"`, 'success');
+      document.getElementById('test-input').value = '';
+    }
+
+    // 테스트 2: 데이터 불러오기
+    function testLoadData() {
+      const quests = JSON.parse(localStorage.getItem('quests')) || [];
+      
+      if (quests.length === 0) {
+        showResult('📭 저장된 퀘스트가 없습니다.', 'info');
+        return;
+      }
+
+      const html = `
+        <h3>저장된 퀘스트 (${quests.length}개)</h3>
+        ${quests.map((q, index) => `
+          <div style="padding: 10px; background: white; margin: 8px 0; border-radius: 8px;">
+            ${index + 1}. ${q.title} (${q.points}P)
+          </div>
+        `).join('')}
+      `;
+      
+      showResult(html, 'success');
+    }
+
+    // 테스트 3: 데이터 삭제
+    function testClearData() {
+      if (confirm('정말 모든 데이터를 삭제하시겠습니까?')) {
+        localStorage.clear();
+        showResult('🗑️ 모든 데이터가 삭제되었습니다.', 'info');
+      }
+    }
+
+    // 결과 표시 헬퍼 함수
+    function showResult(message, type) {
+      const result = document.getElementById('result');
+      result.innerHTML = message;
+      result.style.display = 'block';
+      
+      // 색상 변경
+      if (type === 'success') {
+        result.style.background = '#e8f5e9';
+      } else if (type === 'error') {
+        result.style.background = '#ffebee';
+      } else {
+        result.style.background = '#e3f2fd';
+      }
+    }
+
+    // 페이지 로드 시 테스트
+    window.onload = function() {
+      console.log('✅ Quest 앱 테스트 페이지 로드 완료');
+      console.log('localStorage 사용 가능:', 'localStorage' in window);
+    };
+  </script>
 </body>
 </html>
+```

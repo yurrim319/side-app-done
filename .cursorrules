@@ -1,0 +1,93 @@
+# Cursor AI 개발 규칙 - done? 프로젝트
+
+## 프로젝트 정보
+- **프로젝트명**: done? (가제)
+- **컨셉**: 친구들과 할일을 공유하고 인증하며 경쟁하는 폐쇄형 소셜 할일 앱
+- **현재 Phase**: Phase 1 (로컬 앱, 서버 없음)
+- **개발 기간**: Phase 1 - 1개월 (2025.01.20 ~ 2025.02.20)
+
+## 역할 및 전문성
+- 당신은 done? 앱 개발 전문가입니다.
+- Phase 1은 서버 없이 localStorage와 PWA만 사용합니다.
+- 모바일 우선 설계를 따릅니다.
+- KISS 원칙을 준수합니다 (복잡한 기능 금지, 핵심만 구현).
+
+## 응답 구조
+1. 요구사항 분석 먼저
+2. 제안하는 접근 방식 설명
+3. 코드 예시 포함
+4. 마무리 전 요약
+
+## 기술 스택 (Phase 1)
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Storage**: localStorage API (서버 없음)
+- **앱 형태**: PWA (manifest.json, service-worker.js)
+- **배포**: Vercel
+- **라이브러리**: 최소화 (필요시: canvas-confetti, compressor.js)
+
+## 프로젝트 구조
+```
+done-app/
+├── index.html          # 메인 페이지
+├── css/
+│   └── style.css      # 전체 스타일 (모바일 우선)
+├── js/
+│   ├── storage.js     # localStorage 관리 (CRUD)
+│   └── app.js         # UI 로직
+├── images/            # 아이콘 등
+├── manifest.json      # PWA 설정
+├── service-worker.js  # 오프라인 캐싱
+└── README.md
+```
+
+## 코드 스타일
+- 네이밍: camelCase (변수, 함수), PascalCase (클래스)
+- 들여쓰기: 2 spaces
+- 주석: 한국어로 명확하게 작성
+- 함수는 작고 단일 책임 원칙 준수
+- `storage.js`: localStorage만 담당
+- `app.js`: UI 로직만 담당
+
+## 핵심 기능 (Phase 1)
+1. **퀘스트 관리**: 추가(제목+포인트), 진행중/완료 탭, 삭제
+2. **사진 인증**: 완료 시 필수, 카메라/갤러리, 이미지 압축(5MB 제한, 800px), base64 저장
+3. **포인트 시스템**: 퀘스트 완료 시 포인트 획득, 총 포인트 표시
+4. **개인 통계**: 총 포인트, 완료 퀘스트 수, 연속 달성일(스트릭), 평균 포인트
+5. **보상형 광고**: 하루 3회 제한, 1회당 200P, 자정 리셋
+6. **PWA**: 오프라인 작동, 홈 화면 추가, 전체화면
+
+## 데이터 구조 (localStorage)
+```javascript
+// 퀘스트
+{
+  id: timestamp,
+  title: string (최대 50자),
+  points: number (10-1000),
+  completed: boolean,
+  image: string (base64) or null,
+  createdAt: ISO string,
+  completedAt: ISO string or null
+}
+
+// 광고
+{
+  date: "YYYY-MM-DD",
+  count: number (0-3)
+}
+```
+
+## 개발 원칙
+- **KISS**: 복잡한 기능 추가 금지, 핵심만 구현, 나중에 추가 가능한 건 미룸
+- **모바일 우선**: 핸드폰에서 먼저 테스트, 터치 영역 최소 44px
+- **코드 분리**: storage.js는 데이터만, app.js는 UI만
+- **에러 처리**: localStorage 용량 초과, 이미지 용량 체크 필수
+
+## Phase 2 고려사항 (현재는 구현하지 않음)
+- Firebase (Authentication, Firestore, Storage)
+- 로그인/회원가입
+- 친구 초대 시스템
+- 랭킹, 피드, 푸시 알림
+- **주의**: Phase 1에서는 서버 관련 기능 절대 추가하지 않음
+
+## 응답 언어
+- 모든 응답은 한국어로 작성합니다.
