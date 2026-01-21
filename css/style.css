@@ -89,6 +89,12 @@ body {
   letter-spacing: -0.5px;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
 .points-display {
   display: flex;
   align-items: center;
@@ -97,6 +103,39 @@ body {
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: 20px;
   backdrop-filter: blur(10px);
+}
+
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  font-size: 20px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.settings-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  color: var(--bg-primary);
+  font-size: 28px;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.back-btn:active {
+  opacity: 0.7;
 }
 
 .points-label {
@@ -813,4 +852,158 @@ body {
   input[type="number"] {
     font-size: 16px;
   }
+}
+
+/* ==========================================
+   관리자 페이지
+   ========================================== */
+.admin-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: calc(var(--header-height) + var(--spacing-lg)) var(--spacing-md) var(--spacing-lg);
+}
+
+.admin-section {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+/* 스토리지 정보 */
+.storage-info {
+  margin-top: var(--spacing-md);
+}
+
+.storage-bar-container {
+  width: 100%;
+  height: 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-sm);
+}
+
+.storage-bar {
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: width 0.3s ease;
+  border-radius: 12px;
+}
+
+.storage-text {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.storage-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.storage-details p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.storage-details strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* 폼 요소 */
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.input-with-suffix input {
+  flex: 1;
+}
+
+.suffix {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.help-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+  line-height: 1.4;
+}
+
+/* 관리자 액션 버튼 */
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:active {
+  background: var(--border-color);
+}
+
+/* 앱 정보 */
+.app-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.app-info p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-info strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* 토스트 알림 */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }

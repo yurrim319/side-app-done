@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 설정 - done?</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="back-btn">←</a>
+      <h1 class="app-title">설정</h1>
+      <div class="header-right"></div>
+    </div>
+  </header>
+
+  <!-- 설정 컨텐츠 -->
+  <main class="admin-container">
+    <!-- 스토리지 정보 -->
+    <section class="admin-section">
+      <h2 class="section-title">저장 공간</h2>
+      <div class="storage-info">
+        <div class="storage-bar-container">
+          <div class="storage-bar" id="storage-bar"></div>
+        </div>
+        <div class="storage-text">
+          <span id="storage-used">0</span> / <span id="storage-limit">5</span> MB
+        </div>
+        <div class="storage-details">
+          <p>완료된 퀘스트: <strong id="completed-count">0</strong>개</p>
+          <p>이미지: <strong id="image-count">0</strong>개</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 이미지 관리 -->
+    <section class="admin-section">
+      <h2 class="section-title">이미지 관리</h2>
+      <div class="form-group">
+        <label for="max-images">최대 저장 이미지 개수</label>
+        <div class="input-with-suffix">
+          <input type="number" id="max-images" min="5" max="100" value="20">
+          <span class="suffix">개</span>
+        </div>
+        <p class="help-text">이 개수를 초과하면 가장 오래된 완료 퀘스트가 자동 삭제됩니다.</p>
+      </div>
+      <button class="btn btn-primary" id="save-max-images">저장</button>
+    </section>
+
+    <!-- 데이터 관리 -->
+    <section class="admin-section">
+      <h2 class="section-title">데이터 관리</h2>
+      <div class="admin-actions">
+        <button class="btn btn-secondary" id="export-data">
+          데이터 내보내기 (JSON)
+        </button>
+        <button class="btn btn-secondary" id="import-data">
+          데이터 가져오기
+        </button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+        <button class="btn btn-danger" id="delete-all-data">
+          모든 데이터 삭제
+        </button>
+      </div>
+    </section>
+
+    <!-- 앱 정보 -->
+    <section class="admin-section">
+      <h2 class="section-title">앱 정보</h2>
+      <div class="app-info">
+        <p>버전: <strong>1.0.0</strong></p>
+        <p>이미지 압축: <strong>600px, 60% 품질</strong></p>
+        <p>스토리지: <strong>localStorage</strong></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 알림 토스트 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

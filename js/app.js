@@ -548,8 +548,8 @@
       debugPanel.log('📷 Image selected: ' + file.name);
       console.log('📷 Image selected:', file.name, Math.round(file.size / 1024) + 'KB');
 
-      // 이미지 압축
-      compressImage(file, 800, 0.8)
+      // 이미지 압축 (용량 절약을 위해 품질 낮춤)
+      compressImage(file, 600, 0.6)
         .then(function(base64) {
           currentCompressedImage = base64;
 
@@ -907,10 +907,55 @@
 
     // 저장 및 렌더링
     saveQuests();
+
+    // 이미지 개수 제한 체크 및 자동 정리
+    cleanupOldQuestsIfNeeded();
+
     renderQuests();
 
     debugPanel.log('✅ Quest completed: ' + quest.title);
     console.log('✅ Quest completed:', quest);
+  }
+
+  // ==========================================
+  // 이미지 개수 제한 및 자동 정리
+  // ==========================================
+
+  function cleanupOldQuestsIfNeeded() {
+    try {
+      var DEFAULT_MAX_IMAGES = 20;
+      var maxImages = parseInt(localStorage.getItem('maxImages') || DEFAULT_MAX_IMAGES, 10);
+
+      // 완료된 퀘스트 중 이미지가 있는 것만 필터링
+      var completedWithImages = quests.filter(function(q) {
+        return q.completed && q.image;
+      });
+
+      // 제한 초과 여부 확인
+      if (completedWithImages.length > maxImages) {
+        // 완료 날짜 최신순으로 정렬
+        completedWithImages.sort(function(a, b) {
+          return new Date(b.completedAt) - new Date(a.completedAt);
+        });
+
+        // 삭제할 퀘스트 (오래된 것들)
+        var toDelete = completedWithImages.slice(maxImages);
+        var deleteIds = toDelete.map(function(q) { return q.id; });
+
+        // 삭제 실행
+        quests = quests.filter(function(q) {
+          return deleteIds.indexOf(q.id) === -1;
+        });
+
+        // 저장
+        saveQuests();
+
+        console.log('🗑️ Auto-cleanup:', toDelete.length, 'old quests deleted');
+        debugPanel.log('🗑️ ' + toDelete.length + '개 오래된 퀘스트 자동 삭제');
+      }
+    } catch (error) {
+      console.error('Failed to cleanup old quests:', error);
+    }
   }
 
   // ==========================================
