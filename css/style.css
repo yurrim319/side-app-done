@@ -1,37 +1,589 @@
+/* ==========================================
+   CSS 변수 정의
+   ========================================== */
+:root {
+  /* 컬러 팔레트 */
+  --primary-color: #6C63FF;
+  --secondary-color: #4834DF;
+  --success-color: #26de81;
+  --danger-color: #fc5c65;
+  --warning-color: #fed330;
+
+  /* 그레이스케일 */
+  --text-primary: #2d3436;
+  --text-secondary: #636e72;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --border-color: #e1e8ed;
+
+  /* 그라디언트 */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+
+  /* 간격 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* 그림자 */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+  --shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+
+  /* 터치 타겟 */
+  --touch-target: 44px;
+
+  /* 헤더 높이 */
+  --header-height: 60px;
+}
+
+/* ==========================================
+   Reset & Base
+   ========================================== */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-bottom: 80px;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+/* ==========================================
+   헤더
+   ========================================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
 }
 
-header {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 var(--spacing-lg);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-header h1 {
-    color: #2c3e50;
+.app-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--bg-primary);
+  letter-spacing: -0.5px;
 }
 
-main {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.points-display {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: rgba(255, 255, 255, 0.25);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.points-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bg-primary);
+}
+
+.points-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--bg-primary);
+}
+
+/* ==========================================
+   탭 네비게이션
+   ========================================== */
+.tabs {
+  position: sticky;
+  top: var(--header-height);
+  display: flex;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 50;
+  margin-top: var(--header-height);
+}
+
+.tab {
+  flex: 1;
+  height: var(--touch-target);
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab.active {
+  color: var(--primary-color);
+  font-weight: 700;
+  border-bottom-color: var(--primary-color);
+}
+
+.tab:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================
+   퀘스트 컨테이너
+   ========================================== */
+.quest-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  min-height: calc(100vh - var(--header-height) - var(--touch-target));
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ==========================================
+   퀘스트 리스트
+   ========================================== */
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* 퀘스트 카드 (JavaScript로 동적 생성될 예정) */
+.quest-card {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quest-card:active {
+  transform: scale(0.98);
+}
+
+.quest-card-content {
+  flex: 1;
+}
+
+.quest-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.quest-card-points {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.quest-card-btn {
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 50%;
+  color: var(--bg-primary);
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quest-card-btn:active {
+  transform: scale(0.9);
+}
+
+/* 완료된 퀘스트 카드 */
+.quest-card.completed {
+  opacity: 0.7;
+  background: var(--bg-secondary);
+}
+
+.quest-card.completed .quest-card-title {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.quest-card.completed .quest-card-btn {
+  background: var(--gradient-success);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ==========================================
+   Empty State
+   ========================================== */
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  margin-bottom: var(--spacing-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   플로팅 버튼 (FAB)
+   ========================================== */
+.fab {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  width: 56px;
+  height: 56px;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.fab:hover {
+  transform: scale(1.05);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 32px;
+  color: var(--bg-primary);
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ==========================================
+   모달
+   ========================================== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.active {
+  display: flex !important;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+  z-index: 201;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.close-btn:active {
+  transform: scale(0.9);
+}
+
+.modal-body {
+  padding: var(--spacing-lg);
+}
+
+.modal-footer {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+/* ==========================================
+   Form 요소
+   ========================================== */
+.form-group {
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+  width: 100%;
+  height: var(--touch-target);
+  padding: 0 var(--spacing-md);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.char-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================
+   버튼
+   ========================================== */
+.btn {
+  flex: 1;
+  height: var(--touch-target);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--bg-primary);
+}
+
+.btn-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+}
+
+/* ==========================================
+   이미지 업로드
+   ========================================== */
+.quest-title-display {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.image-upload input[type="file"] {
+  display: none;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-secondary);
+}
+
+.upload-label:hover {
+  border-color: var(--primary-color);
+  background: rgba(108, 99, 255, 0.05);
+}
+
+.camera-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.upload-label span:last-child {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.image-preview {
+  margin-top: var(--spacing-md);
+  border-radius: 12px;
+  overflow: hidden;
+  display: none;
+}
+
+.image-preview.active {
+  display: block;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================
+   반응형 (태블릿)
+   ========================================== */
+@media (min-width: 768px) {
+  .quest-container {
+    padding: var(--spacing-lg);
+  }
+
+  .modal-content {
+    width: 480px;
+  }
+}
+
+/* ==========================================
+   반응형 (데스크톱)
+   ========================================== */
+@media (min-width: 1024px) {
+  .quest-container {
+    max-width: 800px;
+  }
+
+  .fab:hover {
+    transform: scale(1.1);
+  }
+}
+
+/* ==========================================
+   Utility Classes
+   ========================================== */
+.hidden {
+  display: none !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ==========================================
+   모바일 최적화
+   ========================================== */
+@media (max-width: 767px) {
+  /* 모달 모바일 최적화 */
+  .modal {
+    padding: var(--spacing-md);
+  }
+
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  /* 터치 최적화 */
+  button,
+  .btn,
+  .tab,
+  .fab {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
+  }
+
+  /* 입력 필드 줌 방지 */
+  input[type="text"],
+  input[type="number"] {
+    font-size: 16px;
+  }
 }

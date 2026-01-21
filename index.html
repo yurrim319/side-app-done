@@ -3,180 +3,113 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quest - 테스트</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, sans-serif;
-      background: #f5f5f5;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 12px;
-    }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 16px;
-      margin-bottom: 12px;
-    }
-
-    #result {
-      margin-top: 20px;
-      padding: 15px;
-      background: #e8f5e9;
-      border-radius: 8px;
-      display: none;
-    }
-  </style>
+  <title>done?</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="header">
-    <h1>🎯 Quest 앱 테스트</h1>
-    <p>Day 1 - 기본 동작 확인</p>
+  <!-- 1. 헤더 -->
+  <header class="header">
+    <div class="header-content">
+      <h1 class="app-title">done?</h1>
+      <div class="points-display">
+        <span class="points-label">P</span>
+        <span class="points-value" id="total-points">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. 탭 네비게이션 -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="active">진행중</button>
+    <button class="tab" data-tab="completed">완료</button>
+  </nav>
+
+  <!-- 3. 퀘스트 리스트 영역 -->
+  <main class="quest-container">
+    <!-- 진행중 탭 -->
+    <div class="tab-content active" id="active-tab">
+      <div class="quest-list" id="active-quest-list">
+        <!-- 퀘스트 카드가 동적으로 추가됨 -->
+      </div>
+      <div class="empty-state" id="active-empty">
+        <p>아직 등록된 퀘스트가 없어요</p>
+        <p>+ 버튼을 눌러 퀘스트를 추가해보세요!</p>
+      </div>
+    </div>
+
+    <!-- 완료 탭 -->
+    <div class="tab-content" id="completed-tab">
+      <div class="quest-list" id="completed-quest-list">
+        <!-- 완료된 퀘스트 카드 -->
+      </div>
+      <div class="empty-state" id="completed-empty">
+        <p>완료한 퀘스트가 없어요</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 4. 플로팅 추가 버튼 -->
+  <button class="fab" id="add-quest-btn">
+    <span class="fab-icon">+</span>
+  </button>
+
+  <!-- 5. 퀘스트 추가 모달 -->
+  <div class="modal" id="add-quest-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>새 퀘스트</h2>
+        <button class="close-btn" id="add-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="quest-title">퀘스트 이름</label>
+          <input type="text" id="quest-title" maxlength="50"
+                 placeholder="예: 운동 30분 하기">
+          <span class="char-count"><span id="title-char-count">0</span>/50</span>
+        </div>
+        <div class="form-group">
+          <label for="quest-points">포인트</label>
+          <input type="number" id="quest-points"
+                 min="10" max="1000" step="10" value="100">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" id="add-cancel-btn">취소</button>
+        <button class="btn btn-primary" id="add-submit-btn">추가</button>
+      </div>
+    </div>
   </div>
 
-  <div class="container">
-    <div class="card">
-      <h2>테스트 1: 입력 & 저장</h2>
-      <input type="text" id="test-input" placeholder="퀘스트 제목을 입력하세요">
-      <button onclick="testLocalStorage()">localStorage에 저장</button>
+  <!-- 6. 완료 인증 모달 -->
+  <div class="modal" id="complete-quest-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>퀘스트 완료</h2>
+        <button class="close-btn" id="complete-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="quest-title-display" id="complete-quest-title">운동 30분 하기</p>
+        <div class="image-upload">
+          <input type="file" id="quest-image" accept="image/*" capture="environment">
+          <label for="quest-image" class="upload-label">
+            <span class="camera-icon">📷</span>
+            <span>인증 사진 찍기</span>
+          </label>
+          <div class="image-preview" id="image-preview"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" id="complete-cancel-btn">취소</button>
+        <button class="btn btn-primary" id="complete-submit-btn">완료</button>
+      </div>
     </div>
-
-    <div class="card">
-      <h2>테스트 2: 불러오기</h2>
-      <button onclick="testLoadData()">저장된 데이터 불러오기</button>
-    </div>
-
-    <div class="card">
-      <h2>테스트 3: 삭제</h2>
-      <button onclick="testClearData()">데이터 전체 삭제</button>
-    </div>
-
-    <div id="result"></div>
   </div>
 
-  <script>
-    // 테스트 1: localStorage 저장
-    function testLocalStorage() {
-      const input = document.getElementById('test-input').value;
-      
-      if (!input) {
-        showResult('❌ 텍스트를 입력해주세요!', 'error');
-        return;
-      }
+  <!-- 모바일 디버깅 패널 (임시) -->
+  <div id="debug-panel" style="position: fixed; bottom: 80px; left: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #0f0; padding: 10px; border-radius: 8px; font-size: 12px; max-height: 150px; overflow-y: auto; z-index: 300; display: none; font-family: monospace;"></div>
 
-      // 기존 데이터 가져오기
-      let quests = JSON.parse(localStorage.getItem('quests')) || [];
-      
-      // 새 퀘스트 추가
-      quests.push({
-        id: Date.now(),
-        title: input,
-        points: 100,
-        completed: false,
-        createdAt: new Date().toISOString()
-      });
-
-      // 저장
-      localStorage.setItem('quests', JSON.stringify(quests));
-      
-      showResult(`✅ 저장 완료! "${input}"`, 'success');
-      document.getElementById('test-input').value = '';
-    }
-
-    // 테스트 2: 데이터 불러오기
-    function testLoadData() {
-      const quests = JSON.parse(localStorage.getItem('quests')) || [];
-      
-      if (quests.length === 0) {
-        showResult('📭 저장된 퀘스트가 없습니다.', 'info');
-        return;
-      }
-
-      const html = `
-        <h3>저장된 퀘스트 (${quests.length}개)</h3>
-        ${quests.map((q, index) => `
-          <div style="padding: 10px; background: white; margin: 8px 0; border-radius: 8px;">
-            ${index + 1}. ${q.title} (${q.points}P)
-          </div>
-        `).join('')}
-      `;
-      
-      showResult(html, 'success');
-    }
-
-    // 테스트 3: 데이터 삭제
-    function testClearData() {
-      if (confirm('정말 모든 데이터를 삭제하시겠습니까?')) {
-        localStorage.clear();
-        showResult('🗑️ 모든 데이터가 삭제되었습니다.', 'info');
-      }
-    }
-
-    // 결과 표시 헬퍼 함수
-    function showResult(message, type) {
-      const result = document.getElementById('result');
-      result.innerHTML = message;
-      result.style.display = 'block';
-      
-      // 색상 변경
-      if (type === 'success') {
-        result.style.background = '#e8f5e9';
-      } else if (type === 'error') {
-        result.style.background = '#ffebee';
-      } else {
-        result.style.background = '#e3f2fd';
-      }
-    }
-
-    // 페이지 로드 시 테스트
-    window.onload = function() {
-      console.log('✅ Quest 앱 테스트 페이지 로드 완료');
-      console.log('localStorage 사용 가능:', 'localStorage' in window);
-    };
-  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>
-```
