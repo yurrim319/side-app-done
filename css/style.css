@@ -221,6 +221,12 @@ body {
   color: var(--primary-color);
 }
 
+.quest-card-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
 .quest-card-btn {
   min-width: var(--touch-target);
   min-height: var(--touch-target);
@@ -476,6 +482,11 @@ body {
   border: 2px solid var(--border-color);
 }
 
+.btn-danger {
+  background: var(--danger-color);
+  color: var(--bg-primary);
+}
+
 /* ==========================================
    이미지 업로드
    ========================================== */
@@ -537,6 +548,203 @@ body {
 }
 
 /* ==========================================
+   퀘스트 상세 모달
+   ========================================== */
+.modal-detail {
+  max-width: 500px;
+}
+
+.detail-image {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.detail-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.detail-info {
+  text-align: center;
+}
+
+.detail-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.detail-points {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.detail-date {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================
+   날짜 피커 (가로 스크롤)
+   ========================================== */
+.date-picker-container {
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+}
+
+.date-picker {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+  padding: var(--spacing-sm) 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.date-picker::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.date-btn {
+  flex: 0 0 auto;
+  min-width: 80px;
+  padding: var(--spacing-md);
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.date-btn:active {
+  transform: scale(0.95);
+}
+
+.date-btn.active {
+  background: var(--gradient-primary);
+  border-color: var(--primary-color);
+}
+
+.date-btn-day {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.date-btn.active .date-btn-day {
+  color: var(--bg-primary);
+}
+
+.date-btn-weekday {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.date-btn.active .date-btn-weekday {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.date-btn-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.date-btn.active .date-btn-count {
+  color: var(--bg-primary);
+}
+
+/* ==========================================
+   갤러리 뷰
+   ========================================== */
+.quest-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.gallery-item {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gallery-item:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-md);
+}
+
+.gallery-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.gallery-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-info {
+  padding: var(--spacing-sm);
+}
+
+.gallery-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.gallery-time {
+  color: var(--text-secondary);
+}
+
+.gallery-points {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.gallery-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ==========================================
    반응형 (태블릿)
    ========================================== */
 @media (min-width: 768px) {
@@ -546,6 +754,10 @@ body {
 
   .modal-content {
     width: 480px;
+  }
+
+  .quest-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
 }
 
