@@ -67,6 +67,9 @@
     // 퀘스트 추가 폼 초기화
     initQuestForm();
 
+    // 이미지 업로드 초기화
+    initImageUpload();
+
     // 초기 렌더링
     renderQuests();
   }
@@ -244,6 +247,16 @@
       }, false);
     }
 
+    // 퀘스트 완료 모달 제출 버튼
+    var completeSubmitBtn = document.getElementById('complete-submit-btn');
+    if (completeSubmitBtn) {
+      completeSubmitBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCompleteQuest();
+      }, false);
+    }
+
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' || e.keyCode === 27) {
@@ -258,6 +271,39 @@
 
     debugPanel.log('✅ Event listeners attached');
     console.log('✅ Modal event listeners attached');
+  }
+
+  // ==========================================
+  // 퀘스트 완료 처리
+  // ==========================================
+
+  function handleCompleteQuest() {
+    // 이미지 선택 필수 검증
+    if (!currentCompressedImage) {
+      alert('인증 사진을 선택해주세요!');
+      debugPanel.log('❌ No image selected');
+      return;
+    }
+
+    // 현재 완료 중인 퀘스트 ID 확인
+    if (!currentCompletingQuestId) {
+      console.error('No quest ID found');
+      return;
+    }
+
+    // 퀘스트 완료 처리
+    completeQuest(currentCompletingQuestId, currentCompressedImage);
+
+    // 완료 모달 닫기
+    var completeQuestModal = document.getElementById('complete-quest-modal');
+    closeModal(completeQuestModal);
+
+    // 상태 초기화
+    currentCompletingQuestId = null;
+    currentCompressedImage = null;
+
+    debugPanel.log('✅ Quest completion submitted');
+    console.log('✅ Quest completion submitted');
   }
 
   // 모달 열기
@@ -332,6 +378,138 @@
       }, false);
       console.log('✅ Character counter initialized');
     }
+  }
+
+  // ==========================================
+  // 이미지 압축
+  // ==========================================
+
+  /**
+   * 이미지 파일을 압축하여 base64로 변환
+   * @param {File} file - 압축할 이미지 파일
+   * @param {number} maxWidth - 최대 너비 (기본값: 800px)
+   * @param {number} quality - 이미지 품질 (0~1, 기본값: 0.8)
+   * @returns {Promise<string>} base64 인코딩된 이미지
+   */
+  function compressImage(file, maxWidth, quality) {
+    maxWidth = maxWidth || 800;
+    quality = quality || 0.8;
+
+    return new Promise(function(resolve, reject) {
+      // 파일 크기 체크 (5MB)
+      var maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        reject(new Error('이미지 파일은 5MB 이하만 업로드 가능합니다.'));
+        return;
+      }
+
+      // 이미지 파일 타입 체크
+      if (!file.type.match(/image.*/)) {
+        reject(new Error('이미지 파일만 업로드 가능합니다.'));
+        return;
+      }
+
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        var img = new Image();
+
+        img.onload = function() {
+          // Canvas 생성
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+
+          // 비율 유지하면서 리사이징
+          var width = img.width;
+          var height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // 이미지 그리기
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // base64로 변환
+          try {
+            var base64 = canvas.toDataURL('image/jpeg', quality);
+            debugPanel.log('✅ Image compressed: ' + Math.round(base64.length / 1024) + 'KB');
+            console.log('✅ Image compressed:', width + 'x' + height, Math.round(base64.length / 1024) + 'KB');
+            resolve(base64);
+          } catch (error) {
+            reject(new Error('이미지 압축 중 오류가 발생했습니다.'));
+          }
+        };
+
+        img.onerror = function() {
+          reject(new Error('이미지를 불러올 수 없습니다.'));
+        };
+
+        img.src = e.target.result;
+      };
+
+      reader.onerror = function() {
+        reject(new Error('파일을 읽을 수 없습니다.'));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ==========================================
+  // 이미지 업로드 핸들러
+  // ==========================================
+
+  // 전역 변수: 현재 선택된 이미지 (압축된 base64)
+  var currentCompressedImage = null;
+
+  function initImageUpload() {
+    var imageInput = document.getElementById('quest-image');
+    var imagePreview = document.getElementById('image-preview');
+
+    if (!imageInput || !imagePreview) {
+      console.error('Image upload elements not found');
+      return;
+    }
+
+    imageInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      debugPanel.log('📷 Image selected: ' + file.name);
+      console.log('📷 Image selected:', file.name, Math.round(file.size / 1024) + 'KB');
+
+      // 이미지 압축
+      compressImage(file, 800, 0.8)
+        .then(function(base64) {
+          currentCompressedImage = base64;
+
+          // 미리보기 표시
+          imagePreview.innerHTML = '<img src="' + base64 + '" alt="preview">';
+          imagePreview.classList.add('active');
+
+          debugPanel.log('✅ Preview displayed');
+          console.log('✅ Image preview displayed');
+        })
+        .catch(function(error) {
+          alert(error.message);
+          debugPanel.log('❌ Image error: ' + error.message);
+          console.error('❌ Image compression error:', error);
+
+          // 입력 초기화
+          imageInput.value = '';
+          currentCompressedImage = null;
+        });
+    }, false);
+
+    console.log('✅ Image upload initialized');
   }
 
   // ==========================================
@@ -498,7 +676,16 @@
     var completedClass = quest.completed ? ' completed' : '';
     var buttonText = quest.completed ? '✓' : '완료';
 
+    // 완료된 퀘스트에 이미지가 있으면 썸네일 표시
+    var thumbnailHtml = '';
+    if (quest.completed && quest.image) {
+      thumbnailHtml = '<div class="quest-card-thumbnail">' +
+        '<img src="' + quest.image + '" alt="인증 사진">' +
+      '</div>';
+    }
+
     return '<div class="quest-card' + completedClass + '" data-id="' + quest.id + '">' +
+      thumbnailHtml +
       '<div class="quest-card-content">' +
         '<div class="quest-card-title">' + escapeHtml(quest.title) + '</div>' +
         '<div class="quest-card-points">' + quest.points + 'P</div>' +
@@ -520,6 +707,9 @@
   // 퀘스트 액션 (완료/삭제)
   // ==========================================
 
+  // 전역 변수: 현재 완료 중인 퀘스트 ID
+  var currentCompletingQuestId = null;
+
   // 전역 함수로 노출 (onclick 이벤트용)
   window.handleQuestAction = function(questId) {
     var quest = quests.find(function(q) { return q.id === questId; });
@@ -535,12 +725,44 @@
         deleteQuest(questId);
       }
     } else {
-      // 진행중 퀘스트는 완료 처리
-      completeQuest(questId);
+      // 진행중 퀘스트는 완료 모달 열기
+      openCompleteModal(questId);
     }
   };
 
-  function completeQuest(questId) {
+  function openCompleteModal(questId) {
+    var quest = quests.find(function(q) { return q.id === questId; });
+
+    if (!quest) return;
+
+    // 현재 완료 중인 퀘스트 ID 저장
+    currentCompletingQuestId = questId;
+
+    // 모달에 퀘스트 제목 표시
+    var questTitleDisplay = document.getElementById('complete-quest-title');
+    if (questTitleDisplay) {
+      questTitleDisplay.textContent = quest.title;
+    }
+
+    // 이미지 및 미리보기 초기화
+    currentCompressedImage = null;
+    var imageInput = document.getElementById('quest-image');
+    var imagePreview = document.getElementById('image-preview');
+    if (imageInput) imageInput.value = '';
+    if (imagePreview) {
+      imagePreview.innerHTML = '';
+      imagePreview.classList.remove('active');
+    }
+
+    // 완료 모달 열기
+    var completeQuestModal = document.getElementById('complete-quest-modal');
+    openModal(completeQuestModal);
+
+    debugPanel.log('📂 Opening complete modal for: ' + quest.title);
+    console.log('📂 Opening complete modal for quest:', quest);
+  }
+
+  function completeQuest(questId, imageBase64) {
     var quest = quests.find(function(q) { return q.id === questId; });
 
     if (!quest) return;
@@ -548,6 +770,7 @@
     // 완료 상태로 변경
     quest.completed = true;
     quest.completedAt = new Date().toISOString();
+    quest.image = imageBase64;
 
     // 저장 및 렌더링
     saveQuests();
