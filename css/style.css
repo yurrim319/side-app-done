@@ -51,6 +51,18 @@
   /* Border width */
   --border-thin: 1px;
   --border-thick: 2px;
+
+  /* Typography */
+  --font-size-base: 16px;
+  --letter-spacing-tight: -0.5px;
+  --letter-spacing-normal: 0px;
+  --letter-spacing-wide: 0.3px;
+  --letter-spacing-wider: 0.5px;
+
+  /* Line heights */
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
 }
 
 /* ==========================================
@@ -64,7 +76,9 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.6;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
   color: var(--text-primary);
   background-color: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
@@ -97,10 +111,11 @@ body {
 }
 
 .app-title {
-  font-size: 24px;
+  font-size: clamp(20px, 5vw, 24px);
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.5px;
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
 }
 
 .header-right {
@@ -119,7 +134,7 @@ body {
   border-radius: var(--radius-full);
 }
 
-.settings-btn {
+.profile-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,7 +148,7 @@ body {
   transition: background 0.2s ease;
 }
 
-.settings-btn:active {
+.profile-btn:active {
   background: var(--color-gray-800);
 }
 
@@ -154,15 +169,25 @@ body {
 }
 
 .points-label {
-  font-size: 14px;
+  font-size: clamp(12px, 3vw, 14px);
   font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .points-value {
-  font-size: 16px;
+  font-size: clamp(14px, 3.5vw, 16px);
   font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.streak-text {
+  font-size: clamp(11px, 2.5vw, 12px);
+  color: var(--text-secondary);
+  margin-top: 2px;
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: var(--line-height-normal);
 }
 
 /* ==========================================
@@ -170,11 +195,11 @@ body {
    ========================================== */
 .tabs {
   position: fixed;
-  top: var(--header-height);
+  bottom: 0;
   left: 0;
   right: 0;
   background: var(--bg-primary);
-  border-bottom: var(--border-thick) solid var(--border-color);
+  border-top: var(--border-thick) solid var(--border-color);
   z-index: 90;
   display: flex;
 }
@@ -186,8 +211,9 @@ body {
   border: none;
   border-right: var(--border-thin) solid var(--border-color);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   font-weight: 500;
+  letter-spacing: var(--letter-spacing-wide);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -209,14 +235,70 @@ body {
 /* ==========================================
    메인 컨텐츠
    ========================================== */
-.content {
+.content-wrapper {
   max-width: 600px;
   margin: 0 auto;
-  padding: calc(var(--header-height) + 50px + var(--spacing-lg)) var(--spacing-md) var(--spacing-lg);
+  padding: calc(var(--header-height) + var(--spacing-lg)) 0 calc(50px + var(--spacing-lg));
 }
 
-.content.hidden {
+.content {
   display: none;
+  padding: 0 var(--spacing-md);
+}
+
+.content.active {
+  display: block;
+}
+
+/* 홈 탭 */
+.today-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.content-title {
+  font-size: clamp(18px, 4.5vw, 20px);
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 12px;
+  background: var(--bg-secondary);
+  border: var(--border-thin) solid var(--border-color);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-black);
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-size: clamp(13px, 3vw, 14px);
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 45px;
+  text-align: right;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.empty-state-sub {
+  font-size: clamp(13px, 3vw, 14px);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 /* ==========================================
@@ -234,14 +316,20 @@ body {
   color: var(--text-secondary);
 }
 
+.hidden {
+  display: none !important;
+}
+
 .empty-state-icon {
   font-size: 48px;
   margin-bottom: var(--spacing-md);
 }
 
 .empty-state-text {
-  font-size: 16px;
+  font-size: clamp(15px, 3.5vw, 16px);
   color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
 }
 
 /* ==========================================
@@ -306,10 +394,12 @@ body {
 }
 
 .quest-title {
-  font-size: 16px;
+  font-size: clamp(15px, 3.5vw, 16px);
   font-weight: 500;
   color: var(--text-primary);
   margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
 }
 
 .quest-title.completed {
@@ -321,17 +411,20 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .quest-points {
   font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .quest-time {
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .quest-actions {
@@ -349,8 +442,9 @@ body {
   color: var(--color-white);
   border: none;
   border-radius: var(--radius-full);
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   font-weight: 500;
+  letter-spacing: var(--letter-spacing-wide);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -368,8 +462,9 @@ body {
   background: var(--color-black);
   color: var(--color-white);
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
   font-weight: 600;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 /* ==========================================
@@ -417,18 +512,21 @@ body {
 }
 
 .date-btn-day {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   font-weight: 600;
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .date-btn-weekday {
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
   opacity: 0.7;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .date-btn-count {
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
   font-weight: 500;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 /* ==========================================
@@ -472,20 +570,23 @@ body {
 }
 
 .gallery-title {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: var(--spacing-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
 }
 
 .gallery-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .gallery-time {
@@ -495,14 +596,387 @@ body {
 .gallery-points {
   color: var(--text-primary);
   font-weight: 600;
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .gallery-empty {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
+  letter-spacing: var(--letter-spacing-wide);
   grid-column: 1 / -1;
+}
+
+/* ==========================================
+   인스타그램 피드 형식 (프로필 페이지)
+   ========================================== */
+.profile-feed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin: var(--spacing-md) calc(-1 * var(--spacing-lg)) 0;
+}
+
+.feed-item {
+  background: var(--bg-primary);
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* 1:1 비율 유지 (구형 브라우저 호환) */
+  height: 0;
+}
+
+.feed-item:active {
+  opacity: 0.7;
+}
+
+.feed-photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-secondary);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feed-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feed-photo.no-photo {
+  background: var(--bg-secondary);
+}
+
+.feed-photo.no-photo .no-photo-icon {
+  font-size: 32px;
+  opacity: 0.3;
+}
+
+/* ==========================================
+   캘린더 뷰
+   ========================================== */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.calendar-title {
+  font-size: clamp(18px, 4.5vw, 20px);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
+}
+
+.calendar-nav {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.calendar-nav-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--bg-primary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+  background: var(--color-gray-100);
+}
+
+.calendar-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.calendar-container {
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.calendar-weekday {
+  text-align: center;
+  padding: var(--spacing-md) var(--spacing-xs);
+  font-size: clamp(12px, 3vw, 14px);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--bg-primary);
+}
+
+.calendar-day {
+  aspect-ratio: 2/3;
+  border-right: var(--border-thin) solid var(--border-color);
+  border-bottom: var(--border-thin) solid var(--border-color);
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  position: relative;
+}
+
+.calendar-day:nth-child(7n) {
+  border-right: none;
+}
+
+.calendar-day.empty {
+  background: var(--bg-secondary);
+  cursor: default;
+}
+
+.calendar-day:not(.empty):hover {
+  opacity: 0.8;
+}
+
+.calendar-day.today {
+  background: var(--color-gray-100);
+}
+
+.calendar-day.today .day-number {
+  font-weight: 700;
+}
+
+/* 사진이 있는 날 */
+.calendar-day.has-photo {
+  padding: 0;
+}
+
+.calendar-day.has-photo .day-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.calendar-day.has-photo .day-number {
+  display: none;
+}
+
+.calendar-day.has-photo .day-count {
+  position: absolute;
+  bottom: var(--spacing-xs);
+  right: var(--spacing-xs);
+  background: rgba(255, 255, 255, 0.95);
+  border: var(--border-thin) solid var(--border-color);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: clamp(10px, 2vw, 11px);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* 사진이 없는 날 */
+.calendar-day:not(.has-photo) {
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.day-number {
+  font-size: clamp(12px, 3vw, 14px);
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.day-quest-indicator {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(11px, 2.5vw, 12px);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.day-circle.all-completed {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.day-circle.partial {
+  border: var(--border-thick) solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.day-total {
+  font-size: clamp(10px, 2vw, 11px);
+  color: var(--text-secondary);
+  margin-top: 2px;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.calendar-legend {
+  display: flex;
+  gap: var(--spacing-lg);
+  font-size: clamp(13px, 3vw, 14px);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.legend-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.legend-completed {
+  background: var(--color-black);
+}
+
+.legend-partial {
+  border: var(--border-thick) solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+/* ==========================================
+   날짜별 상세 모달
+   ========================================== */
+.day-detail-summary {
+  font-size: clamp(13px, 3vw, 14px);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.day-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.day-detail-item {
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.day-detail-item.incomplete {
+  opacity: 0.6;
+  border-color: var(--color-gray-400);
+}
+
+.day-detail-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: var(--bg-secondary);
+}
+
+.day-detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.day-detail-info {
+  padding: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.day-detail-quest-title {
+  font-size: clamp(15px, 3.5vw, 16px);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
+}
+
+.day-detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--color-black);
+  color: var(--color-white);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: clamp(11px, 2.5vw, 12px);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.day-detail-badge.incomplete-badge {
+  background: var(--color-gray-400);
+  color: var(--color-white);
+}
+
+.day-detail-points {
+  background: var(--color-black);
+  color: var(--color-white);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: clamp(13px, 3vw, 14px);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-normal);
+  white-space: nowrap;
+}
+
+.day-detail-points.incomplete-points {
+  background: var(--color-gray-400);
+  color: var(--color-white);
+}
+
+/* 완료 모달 추가 스타일 */
+.complete-quest-name {
+  font-size: clamp(17px, 4vw, 18px);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-normal);
+}
+
+.complete-quest-points {
+  font-size: clamp(13px, 3vw, 14px);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 /* ==========================================
@@ -510,7 +984,7 @@ body {
    ========================================== */
 .fab {
   position: fixed;
-  bottom: var(--spacing-lg);
+  bottom: 80px;
   right: var(--spacing-lg);
   width: 56px;
   height: 56px;
@@ -567,6 +1041,8 @@ body {
   max-width: 400px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .modal-header {
@@ -577,9 +1053,11 @@ body {
 }
 
 .modal-title {
-  font-size: 20px;
+  font-size: clamp(18px, 4.5vw, 20px);
   font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
 }
 
 .modal-close {
@@ -603,6 +1081,9 @@ body {
 
 .modal-body {
   margin-bottom: var(--spacing-lg);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .modal-footer {
@@ -612,30 +1093,175 @@ body {
 }
 
 /* ==========================================
+   퀘스트 상세 모달 (프로필 페이지)
+   ========================================== */
+.quest-detail-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--bg-secondary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+}
+
+.quest-detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.quest-detail-no-photo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+
+.quest-detail-no-photo .no-photo-icon {
+  font-size: 64px;
+  opacity: 0.3;
+}
+
+.quest-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.quest-detail-title {
+  font-size: clamp(18px, 4.5vw, 20px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-normal);
+  margin: 0;
+}
+
+.quest-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.quest-detail-date {
+  font-size: clamp(14px, 3.5vw, 15px);
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.quest-detail-points-value {
+  font-size: clamp(16px, 4vw, 18px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.quest-detail-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-thin) solid var(--border-color);
+}
+
+.quest-action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-height: var(--touch-target);
+  background: var(--bg-primary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: clamp(14px, 3.5vw, 15px);
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: var(--letter-spacing-normal);
+  flex: 1;
+  justify-content: center;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  touch-action: manipulation;
+}
+
+.quest-action-btn:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.quest-action-btn .action-icon {
+  font-size: clamp(18px, 4.5vw, 20px);
+  line-height: 1;
+}
+
+.quest-action-btn .action-count {
+  font-size: clamp(13px, 3vw, 14px);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.quest-like-btn:hover {
+  background: var(--color-gray-100);
+}
+
+.quest-dislike-btn:hover {
+  background: var(--color-gray-100);
+}
+
+/* 활성화 상태 (나중에 기능 추가 시 사용) */
+.quest-action-btn.active {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+.quest-like-btn.active {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.quest-dislike-btn.active {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+/* ==========================================
    폼 요소
    ========================================== */
 .form-group {
   margin-bottom: var(--spacing-md);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .form-label {
   display: block;
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: var(--spacing-sm);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .form-input,
 .form-select {
   width: 100%;
+  max-width: 100%;
   padding: var(--spacing-md);
   background: var(--bg-primary);
   border: var(--border-thick) solid var(--border-color);
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: clamp(15px, 3.5vw, 16px);
   color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -646,6 +1272,26 @@ body {
 
 .form-input::placeholder {
   color: var(--text-secondary);
+}
+
+/* 날짜 입력 필드 특별 처리 */
+input[type="date"].form-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  position: relative;
+  padding-right: var(--spacing-md);
+}
+
+input[type="date"].form-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: var(--spacing-md);
+  cursor: pointer;
+}
+
+input[type="date"].form-input::-webkit-inner-spin-button,
+input[type="date"].form-input::-webkit-clear-button {
+  display: none;
 }
 
 /* 이미지 업로드 */
@@ -675,9 +1321,11 @@ body {
 }
 
 .image-upload-text {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-secondary);
   text-align: center;
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: var(--line-height-normal);
 }
 
 .image-preview {
@@ -706,8 +1354,9 @@ body {
   padding: var(--spacing-md) var(--spacing-lg);
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: clamp(15px, 3.5vw, 16px);
   font-weight: 600;
+  letter-spacing: var(--letter-spacing-wide);
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
@@ -727,6 +1376,13 @@ body {
 
 .btn-primary:active {
   transform: scale(0.98);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .btn-secondary {
@@ -774,10 +1430,12 @@ body {
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: clamp(17px, 4vw, 18px);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: var(--spacing-md);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
 }
 
 /* 스토리지 정보 */
@@ -804,9 +1462,10 @@ body {
 
 .storage-text {
   text-align: center;
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-secondary);
   margin-bottom: var(--spacing-md);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .storage-details {
@@ -816,8 +1475,9 @@ body {
 }
 
 .storage-details p {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .storage-details strong {
@@ -837,16 +1497,18 @@ body {
 }
 
 .suffix {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-secondary);
   font-weight: 500;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .help-text {
-  font-size: 12px;
+  font-size: clamp(11px, 2.5vw, 12px);
   color: var(--text-secondary);
   margin-top: var(--spacing-xs);
-  line-height: 1.4;
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 /* 관리자 액션 버튼 */
@@ -864,11 +1526,12 @@ body {
 }
 
 .app-info p {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .app-info strong {
@@ -888,7 +1551,9 @@ body {
   color: var(--color-white);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: var(--line-height-normal);
   z-index: 10000;
   opacity: 0;
   transition: all 0.3s ease;
@@ -904,7 +1569,82 @@ body {
 }
 
 /* ==========================================
-   반응형 (태블릿)
+   프로필 페이지
+   ========================================== */
+.profile-stats {
+  text-align: center;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  background: var(--color-black);
+  color: var(--color-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: var(--spacing-md);
+}
+
+.profile-name {
+  font-size: clamp(18px, 4.5vw, 20px);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.stat-card {
+  background: var(--bg-secondary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.stat-value {
+  font-size: clamp(20px, 5vw, 24px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.stat-label {
+  font-size: clamp(11px, 2.5vw, 12px);
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.no-photo {
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-photo-icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+/* ==========================================
+   반응형 (태블릿 이상)
    ========================================== */
 @media (min-width: 768px) {
   .quest-gallery {
@@ -913,6 +1653,46 @@ body {
 
   .modal-content {
     max-width: 500px;
+  }
+
+  /* 큰 화면에서 hover 효과 */
+  .tab:hover {
+    background: var(--color-gray-100);
+  }
+
+  .tab.active:hover {
+    background: var(--color-black);
+  }
+
+  .quest-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .calendar-day:not(.empty):hover {
+    transform: scale(1.02);
+  }
+
+  /* 더 큰 터치 타겟은 필요 없으므로 버튼 패딩 조정 가능 */
+  .btn-complete {
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+}
+
+/* 데스크톱 화면 */
+@media (min-width: 1024px) {
+  .header-content,
+  .content-wrapper {
+    max-width: 800px;
+  }
+
+  .modal-content {
+    max-width: 600px;
+  }
+
+  /* 캘린더 그리드 간격 조정 */
+  .calendar-grid {
+    gap: 1px;
   }
 }
 
@@ -927,16 +1707,136 @@ body {
   .fab {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  /* 입력 필드 줌 방지 */
+  /* 모바일에서 버튼 클릭 지연 방지 */
+  #add-submit-btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 프로필 피드 모바일 최적화 */
+  .profile-feed {
+    margin: var(--spacing-md) calc(-1 * var(--spacing-md)) 0;
+  }
+
+  .feed-item {
+    /* iOS Safari 호환성을 위한 추가 설정 */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  .feed-photo img {
+    /* 이미지 렌더링 최적화 (하드웨어 가속) */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* 입력 필드 줌 방지 - 최소 16px */
   input[type="text"],
-  input[type="number"] {
+  input[type="number"],
+  input[type="date"],
+  .form-input,
+  .form-select {
     font-size: 16px;
   }
 
   .modal-content {
     width: 95%;
+    max-width: calc(100vw - var(--spacing-lg) * 2);
     max-height: 90vh;
+    padding: var(--spacing-md);
+  }
+
+  /* 모달 내부 폼 요소들이 잘 맞도록 */
+  .modal-body {
+    padding: 0;
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-input,
+  .form-select {
+    width: 100%;
+    max-width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  /* 날짜 입력 필드가 튀어나오지 않도록 */
+  input[type="date"].form-input {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* 모바일에서 더 나은 가독성을 위한 조정 */
+  body {
+    font-size: 16px;
+  }
+
+  .header-content {
+    padding: 0 var(--spacing-md);
+  }
+
+  .content-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* 작은 모바일 화면 */
+@media (max-width: 375px) {
+  .app-title {
+    font-size: 20px;
+  }
+
+  .points-display {
+    padding: 6px var(--spacing-sm);
+  }
+
+  .points-label,
+  .points-value {
+    font-size: 12px;
+  }
+
+  .streak-text {
+    font-size: 10px;
+  }
+
+  .calendar-day.has-photo .day-count {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  /* 작은 화면에서 모달 최적화 */
+  .modal-content {
+    width: 90%;
+    max-width: calc(100vw - var(--spacing-md) * 2);
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .modal-header {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .modal-title {
+    font-size: 17px;
+  }
+
+  .form-input,
+  .form-select {
+    padding: var(--spacing-sm);
+    font-size: 15px;
+  }
+
+  .btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 14px;
   }
 }

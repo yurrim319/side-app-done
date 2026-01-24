@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>프로필 - done?</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="back-btn">←</a>
+      <h1 class="app-title">프로필</h1>
+      <div class="header-right">
+        <a href="admin.html" class="profile-btn" title="설정">⚙️</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 프로필 컨텐츠 -->
+  <main class="admin-container">
+    <!-- 프로필 정보 -->
+    <section class="admin-section profile-stats">
+      <div class="profile-header">
+        <div class="profile-avatar">👤</div>
+        <h2 class="profile-name">나의 기록</h2>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="profile-points">0</div>
+          <div class="stat-label">총 포인트</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="profile-streak">0</div>
+          <div class="stat-label">연속 달성</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="profile-completed">0</div>
+          <div class="stat-label">완료 퀘스트</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 완료한 퀘스트 목록 -->
+    <section class="admin-section">
+      <h2 class="section-title">완료한 퀘스트</h2>
+      <div class="profile-feed" id="completed-quests-gallery">
+        <!-- 완료한 퀘스트가 동적으로 추가됨 -->
+      </div>
+      <div class="empty-state hidden" id="profile-empty">
+        <p class="empty-state-icon">📝</p>
+        <p class="empty-state-text">완료한 퀘스트가 없습니다</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 퀘스트 상세 모달 -->
+  <div class="modal" id="quest-detail-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">퀘스트 상세</h2>
+        <button class="modal-close" id="quest-detail-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="quest-detail-image" id="quest-detail-image"></div>
+        <div class="quest-detail-content">
+          <h3 class="quest-detail-title" id="quest-detail-title"></h3>
+          <div class="quest-detail-meta">
+            <span class="quest-detail-date" id="quest-detail-date"></span>
+            <span class="quest-detail-points-value" id="quest-detail-points"></span>
+          </div>
+          <div class="quest-detail-actions">
+            <button class="quest-action-btn quest-like-btn" id="quest-like-btn" title="좋아요">
+              <span class="action-icon">👍</span>
+              <span class="action-count" id="quest-like-count">0</span>
+            </button>
+            <button class="quest-action-btn quest-dislike-btn" id="quest-dislike-btn" title="싫어요">
+              <span class="action-icon">👎</span>
+              <span class="action-count" id="quest-dislike-count">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/profile.js"></script>
+</body>
+</html>

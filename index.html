@@ -10,59 +10,109 @@
   <!-- 1. 헤더 -->
   <header class="header">
     <div class="header-content">
-      <h1 class="app-title">done?</h1>
+      <div>
+        <h1 class="app-title">done?</h1>
+        <p class="streak-text" id="streak-text">0일 연속 달성 중 🔥</p>
+      </div>
       <div class="header-right">
         <div class="points-display">
           <span class="points-label">P</span>
           <span class="points-value" id="total-points">0</span>
         </div>
-        <a href="admin.html" class="settings-btn" title="설정">⚙️</a>
+        <a href="profile.html" class="profile-btn" title="프로필">👤</a>
       </div>
     </div>
   </header>
 
   <!-- 2. 탭 네비게이션 -->
   <nav class="tabs">
-    <button class="tab active" data-tab="active">진행중</button>
-    <button class="tab" data-tab="completed">완료</button>
+    <button class="tab active" data-tab="home">
+      <span>홈</span>
+    </button>
+    <button class="tab" data-tab="calendar">
+      <span>캘린더</span>
+    </button>
+    <button class="tab" data-tab="leaderboard">
+      <span>순위</span>
+    </button>
   </nav>
 
-  <!-- 3. 퀘스트 리스트 영역 -->
-  <main class="quest-container">
-    <!-- 진행중 탭 -->
-    <div class="tab-content active" id="active-tab">
-      <div class="quest-list" id="active-quest-list">
-        <!-- 퀘스트 카드가 동적으로 추가됨 -->
+  <!-- 3. 콘텐츠 영역 -->
+  <main class="content-wrapper">
+
+    <!-- 홈 탭 - 오늘의 퀘스트 -->
+    <div class="content active" id="home-content">
+      <div class="today-header">
+        <h2 class="content-title">오늘의 퀘스트</h2>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="today-progress"></div>
+          </div>
+          <span class="progress-text" id="progress-text">0/0</span>
+        </div>
       </div>
-      <div class="empty-state" id="active-empty">
-        <p>아직 등록된 퀘스트가 없어요</p>
-        <p>+ 버튼을 눌러 퀘스트를 추가해보세요!</p>
+      <div class="quest-list" id="today-quest-list">
+        <!-- 오늘의 퀘스트가 동적으로 추가됨 -->
+      </div>
+      <div class="empty-state hidden" id="today-empty">
+        <p class="empty-state-icon">📝</p>
+        <p class="empty-state-text">오늘의 퀘스트가 없습니다</p>
+        <p class="empty-state-sub">+ 버튼을 눌러 추가해보세요</p>
       </div>
     </div>
 
-    <!-- 완료 탭 -->
-    <div class="tab-content" id="completed-tab">
-      <!-- 날짜 피커 (가로 스크롤) -->
-      <div class="date-picker-container">
-        <div class="date-picker" id="date-picker">
-          <!-- 날짜 버튼들이 동적으로 추가됨 -->
+    <!-- 캘린더 탭 -->
+    <div class="content" id="calendar-content">
+      <div class="calendar-header">
+        <h2 class="calendar-title" id="calendar-title">2026년 1월</h2>
+        <div class="calendar-nav">
+          <button class="calendar-nav-btn" id="prev-month">
+            <span>‹</span>
+          </button>
+          <button class="calendar-nav-btn" id="next-month">
+            <span>›</span>
+          </button>
         </div>
       </div>
 
-      <!-- 완료 퀘스트 갤러리 뷰 -->
-      <div class="quest-gallery" id="quest-gallery">
-        <!-- 이미지 갤러리가 동적으로 추가됨 -->
+      <div class="calendar-container">
+        <div class="calendar-weekdays">
+          <div class="calendar-weekday">일</div>
+          <div class="calendar-weekday">월</div>
+          <div class="calendar-weekday">화</div>
+          <div class="calendar-weekday">수</div>
+          <div class="calendar-weekday">목</div>
+          <div class="calendar-weekday">금</div>
+          <div class="calendar-weekday">토</div>
+        </div>
+        <div class="calendar-grid" id="calendar-grid">
+          <!-- 달력 날짜가 동적으로 추가됨 -->
+        </div>
       </div>
 
-      <!-- 기존 리스트 뷰 (선택사항으로 숨김 처리) -->
-      <div class="quest-list hidden" id="completed-quest-list">
-        <!-- 완료된 퀘스트 카드 -->
-      </div>
-
-      <div class="empty-state" id="completed-empty">
-        <p>완료한 퀘스트가 없어요</p>
+      <div class="calendar-legend">
+        <div class="legend-item">
+          <div class="legend-icon legend-completed"></div>
+          <span>모두 완료</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon legend-partial"></div>
+          <span>일부 완료</span>
+        </div>
       </div>
     </div>
+
+    <!-- 리더보드 탭 (임시) -->
+    <div class="content" id="leaderboard-content">
+      <div class="today-header">
+        <h2 class="content-title">순위</h2>
+      </div>
+      <div class="empty-state">
+        <p class="empty-state-icon">🏆</p>
+        <p class="empty-state-text">준비 중입니다</p>
+      </div>
+    </div>
+
   </main>
 
   <!-- 4. 플로팅 추가 버튼 -->
@@ -72,80 +122,76 @@
 
   <!-- 5. 퀘스트 추가 모달 -->
   <div class="modal" id="add-quest-modal">
-    <div class="modal-overlay"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>새 퀘스트</h2>
-        <button class="close-btn" id="add-modal-close">&times;</button>
+        <h2 class="modal-title">새 퀘스트</h2>
+        <button class="modal-close" id="add-modal-close">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="quest-title">퀘스트 이름</label>
-          <input type="text" id="quest-title" maxlength="50"
-                 placeholder="예: 운동 30분 하기">
-          <span class="char-count"><span id="title-char-count">0</span>/50</span>
+          <label class="form-label" for="quest-title">퀘스트 이름</label>
+          <input class="form-input" type="text" id="quest-title"
+                 placeholder="예: 운동 30분 하기" maxlength="50">
         </div>
         <div class="form-group">
-          <label for="quest-points">포인트</label>
-          <input type="number" id="quest-points"
-                 min="10" max="1000" step="10" value="100">
+          <label class="form-label" for="quest-points">포인트</label>
+          <input class="form-input" type="number" id="quest-points"
+                 min="10" max="1000" step="10" value="20">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quest-date">날짜</label>
+          <input class="form-input" type="date" id="quest-date" required>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-cancel" id="add-cancel-btn">취소</button>
-        <button class="btn btn-primary" id="add-submit-btn">추가</button>
+        <button type="button" class="btn btn-secondary" id="add-cancel-btn">취소</button>
+        <button type="button" class="btn btn-primary" id="add-submit-btn">추가</button>
       </div>
     </div>
   </div>
 
   <!-- 6. 완료 인증 모달 -->
   <div class="modal" id="complete-quest-modal">
-    <div class="modal-overlay"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>퀘스트 완료</h2>
-        <button class="close-btn" id="complete-modal-close">&times;</button>
+        <h2 class="modal-title">퀘스트 완료</h2>
+        <button class="modal-close" id="complete-modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="quest-title-display" id="complete-quest-title">운동 30분 하기</p>
-        <div class="image-upload">
-          <input type="file" id="quest-image" accept="image/*">
-          <label for="quest-image" class="upload-label">
-            <span class="camera-icon">📷</span>
-            <span>인증 사진 선택</span>
-          </label>
-          <div class="image-preview" id="image-preview"></div>
+        <p class="complete-quest-name" id="complete-quest-title"></p>
+        <p class="complete-quest-points" id="complete-quest-points"></p>
+
+        <div class="image-upload-area" id="image-upload-area">
+          <input type="file" id="quest-image" accept="image/*" style="display: none;">
+          <div class="image-upload-icon">📷</div>
+          <div class="image-upload-text">인증 사진 선택</div>
         </div>
+        <div class="image-preview" id="image-preview"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-cancel" id="complete-cancel-btn">취소</button>
+        <button class="btn btn-secondary" id="complete-cancel-btn">취소</button>
         <button class="btn btn-primary" id="complete-submit-btn">완료</button>
       </div>
     </div>
   </div>
 
-  <!-- 7. 완료 퀘스트 상세 모달 -->
-  <div class="modal" id="quest-detail-modal">
-    <div class="modal-overlay"></div>
-    <div class="modal-content modal-detail">
+  <!-- 7. 날짜별 상세 모달 -->
+  <div class="modal" id="day-detail-modal">
+    <div class="modal-content">
       <div class="modal-header">
-        <h2>퀘스트 상세</h2>
-        <button class="close-btn" id="detail-modal-close">&times;</button>
+        <div>
+          <h2 class="modal-title" id="day-detail-title">2026년 1월 24일</h2>
+          <p class="day-detail-summary" id="day-detail-summary">5개 완료 • 100 포인트</p>
+        </div>
+        <button class="modal-close" id="day-detail-close">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="detail-image" id="detail-image">
-          <!-- 큰 이미지가 여기에 표시됨 -->
+        <div class="day-detail-list" id="day-detail-list">
+          <!-- 날짜별 완료 퀘스트 목록이 동적으로 추가됨 -->
         </div>
-        <div class="detail-info">
-          <h3 class="detail-title" id="detail-title">퀘스트 제목</h3>
-          <div class="detail-meta">
-            <span class="detail-points" id="detail-points">100P</span>
-            <span class="detail-date" id="detail-date">2026.1.21</span>
-          </div>
+        <div class="empty-state hidden" id="day-detail-empty">
+          <p class="empty-state-text">완료한 퀘스트가 없습니다</p>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="detail-delete-btn">삭제</button>
       </div>
     </div>
   </div>
