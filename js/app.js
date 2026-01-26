@@ -52,7 +52,10 @@
   // 전역 상태
   // ==========================================
   var quests = [];
+  var repeatQuests = []; // 반복 퀘스트
   var currentTab = 'home';
+  var currentSubTab = 'calendar-view'; // 캘린더 서브탭
+  var currentQuestType = 'single'; // 퀘스트 추가 타입 (single/repeat)
   var currentMonth = new Date();
   var selectedQuestId = null;
   var currentCompressedImage = null;
@@ -64,18 +67,35 @@
   // ==========================================
   function init() {
     loadQuests();
+    loadRepeatQuests();
     initTabs();
+    initSubTabs();
+    initQuestTypeTabs();
     initModals();
     initQuestForm();
     initImageUpload();
-    
+
     // 날짜 입력 필드 초기화
     var dateInput = document.getElementById('quest-date');
     if (dateInput) {
       dateInput.value = getTodayDateString();
     }
-    
-    renderAll();
+
+    // 저장된 탭 복원
+    var savedTab = localStorage.getItem('currentTab');
+    if (savedTab && (savedTab === 'home' || savedTab === 'calendar' || savedTab === 'leaderboard')) {
+      switchTab(savedTab, false); // 저장하지 않고 복원만
+
+      // 캘린더 탭일 경우 서브탭도 복원
+      if (savedTab === 'calendar') {
+        var savedSubTab = localStorage.getItem('currentSubTab');
+        if (savedSubTab && (savedSubTab === 'calendar-view' || savedSubTab === 'quest-manage')) {
+          switchSubTab(savedSubTab, false);
+        }
+      }
+    } else {
+      renderAll();
+    }
   }
 
   // ==========================================
@@ -101,6 +121,26 @@
     }
   }
 
+  function loadRepeatQuests() {
+    try {
+      var stored = localStorage.getItem('repeatQuests');
+      repeatQuests = stored ? JSON.parse(stored) : [];
+      debugPanel.log('📂 Loaded ' + repeatQuests.length + ' repeat quests');
+    } catch (error) {
+      console.error('Failed to load repeat quests:', error);
+      repeatQuests = [];
+    }
+  }
+
+  function saveRepeatQuests() {
+    try {
+      localStorage.setItem('repeatQuests', JSON.stringify(repeatQuests));
+      debugPanel.log('💾 Saved ' + repeatQuests.length + ' repeat quests');
+    } catch (error) {
+      console.error('Failed to save repeat quests:', error);
+    }
+  }
+
   // ==========================================
   // 탭 전환
   // ==========================================
@@ -116,8 +156,15 @@
     }
   }
 
-  function switchTab(tab) {
+  function switchTab(tab, saveToStorage) {
     currentTab = tab;
+
+    // 탭 상태 저장 (기본적으로 저장, 초기 로드 시에는 저장하지 않음)
+    if (saveToStorage !== false) {
+      try {
+        localStorage.setItem('currentTab', tab);
+      } catch (e) {}
+    }
 
     // 탭 버튼 상태 업데이트
     var tabs = document.querySelectorAll('.tab');
@@ -151,16 +198,253 @@
   }
 
   // ==========================================
+  // 서브 탭 (캘린더 내부)
+  // ==========================================
+  function initSubTabs() {
+    var subTabs = document.querySelectorAll('.sub-tab');
+
+    for (var i = 0; i < subTabs.length; i++) {
+      subTabs[i].addEventListener('click', function(e) {
+        e.preventDefault();
+        var targetSubTab = this.getAttribute('data-subtab');
+        switchSubTab(targetSubTab);
+      }, false);
+    }
+  }
+
+  function switchSubTab(subTab, saveToStorage) {
+    currentSubTab = subTab;
+
+    // 저장 옵션이 false가 아니면 localStorage에 저장
+    if (saveToStorage !== false) {
+      try {
+        localStorage.setItem('currentSubTab', subTab);
+      } catch (e) {
+        console.error('Failed to save subtab:', e);
+      }
+    }
+
+    // 서브탭 버튼 상태 업데이트
+    var subTabs = document.querySelectorAll('.sub-tab');
+    for (var i = 0; i < subTabs.length; i++) {
+      if (subTabs[i].getAttribute('data-subtab') === subTab) {
+        subTabs[i].classList.add('active');
+      } else {
+        subTabs[i].classList.remove('active');
+      }
+    }
+
+    // 서브 콘텐츠 표시/숨김
+    var subContents = document.querySelectorAll('.sub-content');
+    for (var j = 0; j < subContents.length; j++) {
+      subContents[j].classList.remove('active');
+    }
+
+    var targetSubContent = document.getElementById(subTab);
+    if (targetSubContent) {
+      targetSubContent.classList.add('active');
+    }
+
+    // 서브탭별 렌더링
+    if (subTab === 'calendar-view') {
+      renderCalendar();
+    } else if (subTab === 'quest-manage') {
+      renderQuestManage();
+    }
+  }
+
+  // ==========================================
+  // 퀘스트 타입 탭 (모달 내부)
+  // ==========================================
+  function initQuestTypeTabs() {
+    var typeTabs = document.querySelectorAll('.quest-type-tab');
+
+    for (var i = 0; i < typeTabs.length; i++) {
+      typeTabs[i].addEventListener('click', function(e) {
+        e.preventDefault();
+        var targetType = this.getAttribute('data-type');
+        switchQuestType(targetType);
+      }, false);
+    }
+  }
+
+  function switchQuestType(type) {
+    currentQuestType = type;
+
+    // 타입탭 버튼 상태 업데이트
+    var typeTabs = document.querySelectorAll('.quest-type-tab');
+    for (var i = 0; i < typeTabs.length; i++) {
+      if (typeTabs[i].getAttribute('data-type') === type) {
+        typeTabs[i].classList.add('active');
+      } else {
+        typeTabs[i].classList.remove('active');
+      }
+    }
+
+    // 날짜/요일 선택 표시 전환
+    var singleDateGroup = document.getElementById('single-date-group');
+    var repeatDaysGroup = document.getElementById('repeat-days-group');
+
+    if (type === 'single') {
+      if (singleDateGroup) singleDateGroup.classList.remove('hidden');
+      if (repeatDaysGroup) repeatDaysGroup.classList.add('hidden');
+    } else {
+      if (singleDateGroup) singleDateGroup.classList.add('hidden');
+      if (repeatDaysGroup) repeatDaysGroup.classList.remove('hidden');
+    }
+  }
+
+  // ==========================================
+  // 퀘스트 관리 렌더링
+  // ==========================================
+  function renderQuestManage() {
+    renderRepeatQuestList();
+    renderSingleQuestList();
+  }
+
+  function renderRepeatQuestList() {
+    var listEl = document.getElementById('repeat-quest-list');
+    var emptyEl = document.getElementById('repeat-empty');
+
+    if (!listEl || !emptyEl) return;
+
+    if (repeatQuests.length === 0) {
+      listEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    emptyEl.classList.add('hidden');
+
+    var html = repeatQuests.map(function(quest) {
+      var daysText = getDaysText(quest.repeatDays);
+      return '<div class="manage-item">' +
+        '<div class="manage-item-info">' +
+          '<div class="manage-item-title">' + escapeHtml(quest.title) + '</div>' +
+          '<div class="manage-item-meta">' +
+            '<span class="manage-item-days">' + daysText + '</span>' +
+            '<span class="manage-item-points">' + quest.points + 'P</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="manage-item-actions">' +
+          '<button class="manage-item-btn delete" onclick="deleteRepeatQuest(\'' + quest.id + '\')" title="삭제">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    listEl.innerHTML = html;
+  }
+
+  function renderSingleQuestList() {
+    var listEl = document.getElementById('single-quest-list');
+    var emptyEl = document.getElementById('single-empty');
+
+    if (!listEl || !emptyEl) return;
+
+    // 미완료 일반 퀘스트만 표시 (날짜순 정렬)
+    var singleQuests = quests.filter(function(q) { return !q.completed; })
+      .sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+
+    if (singleQuests.length === 0) {
+      listEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    emptyEl.classList.add('hidden');
+
+    var html = singleQuests.map(function(quest) {
+      var dateText = formatDateKorean(quest.date);
+      return '<div class="manage-item">' +
+        '<div class="manage-item-info">' +
+          '<div class="manage-item-title">' + escapeHtml(quest.title) + '</div>' +
+          '<div class="manage-item-meta">' +
+            '<span class="manage-item-days">' + dateText + '</span>' +
+            '<span class="manage-item-points">' + quest.points + 'P</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="manage-item-actions">' +
+          '<button class="manage-item-btn delete" onclick="deleteSingleQuest(\'' + quest.id + '\')" title="삭제">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    listEl.innerHTML = html;
+  }
+
+  // 반복 퀘스트 삭제
+  window.deleteRepeatQuest = function(questId) {
+    if (!confirm('이 반복 퀘스트를 삭제하시겠습니까?')) return;
+
+    repeatQuests = repeatQuests.filter(function(q) { return q.id !== questId; });
+    saveRepeatQuests();
+    renderQuestManage();
+    renderTodayQuests();
+  };
+
+  // 일반 퀘스트 삭제
+  window.deleteSingleQuest = function(questId) {
+    if (!confirm('이 퀘스트를 삭제하시겠습니까?')) return;
+
+    quests = quests.filter(function(q) { return q.id !== questId; });
+    saveQuests();
+    renderQuestManage();
+    renderTodayQuests();
+  };
+
+  // 요일 텍스트 변환
+  function getDaysText(days) {
+    var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    if (days.length === 7) return '매일';
+    if (days.length === 5 && days.indexOf(0) === -1 && days.indexOf(6) === -1) return '평일';
+    if (days.length === 2 && days.indexOf(0) !== -1 && days.indexOf(6) !== -1) return '주말';
+
+    return days.map(function(d) { return dayNames[d]; }).join(', ');
+  }
+
+  // 한국어 날짜 포맷
+  function formatDateKorean(dateString) {
+    var date = new Date(dateString);
+    return (date.getMonth() + 1) + '월 ' + date.getDate() + '일';
+  }
+
+  // ==========================================
   // 홈 탭 - 오늘의 퀘스트
   // ==========================================
   function renderTodayQuests() {
     var today = getTodayDateString();
-    var todayQuests = quests.filter(function(q) {
+    var todayDayOfWeek = new Date().getDay(); // 0=일, 1=월, ... 6=토
+
+    // 일반 퀘스트 (오늘 날짜)
+    var todaySingleQuests = quests.filter(function(q) {
       return q.date === today;
     });
 
-    var completed = todayQuests.filter(function(q) { return q.completed; }).length;
-    var total = todayQuests.length;
+    // 반복 퀘스트 (오늘 요일에 해당)
+    var todayRepeatQuests = repeatQuests.filter(function(q) {
+      return q.repeatDays.indexOf(todayDayOfWeek) !== -1;
+    }).map(function(rq) {
+      // 반복 퀘스트를 오늘 날짜의 완료 상태와 함께 반환
+      var completionKey = today;
+      var isCompleted = rq.completedDates && rq.completedDates[completionKey];
+      return {
+        id: rq.id,
+        title: rq.title,
+        points: rq.points,
+        date: today,
+        completed: isCompleted || false,
+        completedAt: isCompleted ? rq.completedDates[completionKey] : null,
+        verified: false,
+        isRepeat: true,
+        repeatDays: rq.repeatDays
+      };
+    });
+
+    // 모든 오늘의 퀘스트 합치기
+    var allTodayQuests = todaySingleQuests.concat(todayRepeatQuests);
+
+    var completed = allTodayQuests.filter(function(q) { return q.completed; }).length;
+    var total = allTodayQuests.length;
 
     // 진행률 업데이트
     var progressFill = document.getElementById('today-progress');
@@ -178,12 +462,12 @@
 
     if (!listEl || !emptyEl) return;
 
-    if (todayQuests.length === 0) {
+    if (allTodayQuests.length === 0) {
       listEl.innerHTML = '';
       emptyEl.classList.remove('hidden');
     } else {
       emptyEl.classList.add('hidden');
-      var html = todayQuests.map(function(quest) {
+      var html = allTodayQuests.map(function(quest) {
         return renderQuestCard(quest);
       }).join('');
       listEl.innerHTML = html;
@@ -196,13 +480,21 @@
     var completedClass = quest.completed ? ' completed' : '';
     var checkedClass = quest.completed ? ' checked' : '';
     var titleClass = quest.completed ? ' completed' : '';
+    var isRepeat = quest.isRepeat ? 'true' : 'false';
 
     var html = '<div class="quest-card' + completedClass + '">' +
       '<div class="quest-card-header">' +
         '<div class="quest-card-left">' +
-          '<div class="quest-checkbox' + checkedClass + '" onclick="handleCheckboxClick(\'' + quest.id + '\')"></div>' +
+          '<div class="quest-checkbox' + checkedClass + '" onclick="handleCheckboxClick(\'' + quest.id + '\', ' + isRepeat + ')"></div>' +
           '<div class="quest-info">' +
-            '<h3 class="quest-title' + titleClass + '">' + escapeHtml(quest.title) + '</h3>' +
+            '<h3 class="quest-title' + titleClass + '">' + escapeHtml(quest.title);
+
+    // 반복 퀘스트인 경우 요일 배지 표시
+    if (quest.isRepeat && quest.repeatDays) {
+      html += '<span class="repeat-badge"><span class="repeat-badge-days">' + getDaysText(quest.repeatDays) + '</span></span>';
+    }
+
+    html += '</h3>' +
             '<div class="quest-meta">' +
               '<span class="quest-points">+' + quest.points + ' 포인트</span>';
 
@@ -216,7 +508,7 @@
         '<div class="quest-actions">';
 
     if (!quest.completed) {
-      html += '<button class="btn-complete" onclick="openCompleteModal(\'' + quest.id + '\')">' +
+      html += '<button class="btn-complete" onclick="openCompleteModal(\'' + quest.id + '\', ' + isRepeat + ')">' +
         '📷 인증하기' +
       '</button>';
     } else if (quest.verified) {
@@ -231,10 +523,19 @@
   }
 
   // 체크박스 클릭 (완료되지 않은 경우 완료 모달 열기)
-  window.handleCheckboxClick = function(questId) {
-    var quest = quests.find(function(q) { return q.id === questId; });
-    if (quest && !quest.completed) {
-      openCompleteModal(questId);
+  window.handleCheckboxClick = function(questId, isRepeat) {
+    if (isRepeat) {
+      var repeatQuest = repeatQuests.find(function(q) { return q.id === questId; });
+      var today = getTodayDateString();
+      var isCompleted = repeatQuest && repeatQuest.completedDates && repeatQuest.completedDates[today];
+      if (repeatQuest && !isCompleted) {
+        openCompleteModal(questId, true);
+      }
+    } else {
+      var quest = quests.find(function(q) { return q.id === questId; });
+      if (quest && !quest.completed) {
+        openCompleteModal(questId, false);
+      }
     }
   };
 
@@ -278,17 +579,37 @@
   function renderCalendarDay(year, month, day) {
     var date = new Date(year, month, day);
     var dateString = formatDateString(date);
-    var dayQuests = quests.filter(function(q) { return q.date === dateString; });
-    var completed = dayQuests.filter(function(q) { return q.completed; });
+    var dayOfWeek = date.getDay(); // 0=일, 1=월, ... 6=토
+
+    // 일반 퀘스트
+    var singleQuests = quests.filter(function(q) { return q.date === dateString; });
+
+    // 해당 요일의 반복 퀘스트
+    var dayRepeatQuests = repeatQuests.filter(function(q) {
+      return q.repeatDays.indexOf(dayOfWeek) !== -1;
+    }).map(function(rq) {
+      var isCompleted = rq.completedDates && rq.completedDates[dateString];
+      return {
+        id: rq.id,
+        title: rq.title,
+        points: rq.points,
+        completed: isCompleted || false,
+        isRepeat: true
+      };
+    });
+
+    // 모든 퀘스트 합치기
+    var allDayQuests = singleQuests.concat(dayRepeatQuests);
+    var completed = allDayQuests.filter(function(q) { return q.completed; });
 
     var today = new Date();
     var isToday = day === today.getDate() &&
                   month === today.getMonth() &&
                   year === today.getFullYear();
 
-    var topPhoto = getTopPhotoForDay(dayQuests);
-    var hasQuests = dayQuests.length > 0;
-    var allCompleted = hasQuests && completed.length === dayQuests.length;
+    var topPhoto = getTopPhotoForDay(singleQuests); // 사진은 일반 퀘스트만
+    var hasQuests = allDayQuests.length > 0;
+    var allCompleted = hasQuests && completed.length === allDayQuests.length;
 
     var classes = 'calendar-day';
     if (isToday) classes += ' today';
@@ -302,7 +623,7 @@
         '<div class="day-number">' + day + '</div>';
 
       if (hasQuests) {
-        html += '<div class="day-count">' + completed.length + '/' + dayQuests.length + '</div>';
+        html += '<div class="day-count">' + completed.length + '/' + allDayQuests.length + '</div>';
       }
     } else {
       // 사진이 없는 경우
@@ -312,7 +633,7 @@
         var circleClass = allCompleted ? 'all-completed' : 'partial';
         html += '<div class="day-quest-indicator">' +
           '<div class="day-circle ' + circleClass + '">' + completed.length + '</div>' +
-          '<div class="day-total">/' + dayQuests.length + '</div>' +
+          '<div class="day-total">/' + allDayQuests.length + '</div>' +
         '</div>';
       }
     }
@@ -351,12 +672,35 @@
   // 날짜별 상세 모달
   // ==========================================
   window.openDayDetail = function(dateString) {
-    var dayQuests = quests.filter(function(q) { return q.date === dateString; });
-    var completed = dayQuests.filter(function(q) { return q.completed; });
+    var date = parseDateString(dateString);
+    var dayOfWeek = date.getDay();
+
+    // 일반 퀘스트
+    var singleQuests = quests.filter(function(q) { return q.date === dateString; });
+
+    // 해당 요일의 반복 퀘스트
+    var dayRepeatQuests = repeatQuests.filter(function(q) {
+      return q.repeatDays.indexOf(dayOfWeek) !== -1;
+    }).map(function(rq) {
+      var isCompleted = rq.completedDates && rq.completedDates[dateString];
+      return {
+        id: rq.id,
+        title: rq.title,
+        points: rq.points,
+        date: dateString,
+        completed: isCompleted || false,
+        completedAt: isCompleted ? rq.completedDates[dateString] : null,
+        isRepeat: true,
+        repeatDays: rq.repeatDays
+      };
+    });
+
+    // 모든 퀘스트 합치기
+    var allDayQuests = singleQuests.concat(dayRepeatQuests);
+    var completed = allDayQuests.filter(function(q) { return q.completed; });
     var totalPoints = completed.reduce(function(sum, q) { return sum + q.points; }, 0);
 
     // 날짜 포맷팅
-    var date = parseDateString(dateString);
     var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
     var formatted = date.getFullYear() + '년 ' + (date.getMonth() + 1) + '월 ' +
                     date.getDate() + '일 (' + dayNames[date.getDay()] + ')';
@@ -369,16 +713,16 @@
 
     if (titleEl) titleEl.textContent = formatted;
     if (summaryEl) {
-      summaryEl.textContent = completed.length + '/' + dayQuests.length + '개 완료 • ' + totalPoints + ' 포인트';
+      summaryEl.textContent = completed.length + '/' + allDayQuests.length + '개 완료 • ' + totalPoints + ' 포인트';
     }
 
     if (listEl && emptyEl) {
-      if (dayQuests.length === 0) {
+      if (allDayQuests.length === 0) {
         listEl.innerHTML = '';
         emptyEl.classList.remove('hidden');
       } else {
         emptyEl.classList.add('hidden');
-        var html = dayQuests.map(function(quest) {
+        var html = allDayQuests.map(function(quest) {
           return renderDayDetailItem(quest);
         }).join('');
         listEl.innerHTML = html;
@@ -448,6 +792,13 @@
           submitBtn.textContent = '추가';
           submitBtn.style.pointerEvents = '';
           submitBtn.removeAttribute('data-processing');
+        }
+        // 퀘스트 타입 탭 초기화 (일반으로)
+        switchQuestType('single');
+        // 요일 체크박스 초기화
+        var dayCheckboxes = document.querySelectorAll('input[name="repeat-day"]');
+        for (var i = 0; i < dayCheckboxes.length; i++) {
+          dayCheckboxes[i].checked = false;
         }
         isAddingQuest = false; // 플래그 초기화
         lastAddQuestTime = 0; // 타임스탬프 초기화
@@ -630,9 +981,9 @@
       var points = parseInt(pointsInput.value, 10);
       var date = dateInput.value;
 
-      debugPanel.log('📝 Form data: title=' + title + ', points=' + points + ', date=' + date);
+      debugPanel.log('📝 Form data: title=' + title + ', points=' + points + ', type=' + currentQuestType);
 
-      // 유효성 검사
+      // 공통 유효성 검사
       if (!title) {
         alert('퀘스트 이름을 입력하세요.');
         isAddingQuest = false;
@@ -657,55 +1008,134 @@
         return;
       }
 
-      if (!date) {
-        alert('날짜를 선택하세요.');
-        isAddingQuest = false;
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = '추가';
-          submitBtn.removeAttribute('data-processing');
-          submitBtn.style.pointerEvents = '';
+      // 반복 퀘스트 처리
+      if (currentQuestType === 'repeat') {
+        var selectedDays = [];
+        var dayCheckboxes = document.querySelectorAll('input[name="repeat-day"]:checked');
+        for (var i = 0; i < dayCheckboxes.length; i++) {
+          selectedDays.push(parseInt(dayCheckboxes[i].value, 10));
         }
-        return;
-      }
 
-      // 퀘스트 생성 및 추가
-      var newQuest = {
-        id: Date.now().toString(),
-        title: title,
-        points: points,
-        date: date,
-        completed: false,
-        verified: false,
-        createdAt: new Date().toISOString()
-      };
+        if (selectedDays.length === 0) {
+          alert('반복할 요일을 선택하세요.');
+          isAddingQuest = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '추가';
+            submitBtn.removeAttribute('data-processing');
+            submitBtn.style.pointerEvents = '';
+          }
+          return;
+        }
 
-      debugPanel.log('➕ Creating quest: ' + JSON.stringify(newQuest));
-      quests.push(newQuest);
-      debugPanel.log('📊 Total quests: ' + quests.length);
-      saveQuests();
-      debugPanel.log('💾 Saved quests');
-      renderAll();
-      debugPanel.log('🔄 Rendered all');
+        // 반복 퀘스트 생성
+        var newRepeatQuest = {
+          id: Date.now().toString(),
+          title: title,
+          points: points,
+          repeatDays: selectedDays.sort(),
+          completedDates: {},
+          createdAt: new Date().toISOString()
+        };
 
-      // 폼 초기화
-      titleInput.value = '';
-      pointsInput.value = '20';
-      dateInput.value = getTodayDateString();
+        debugPanel.log('➕ Creating repeat quest: ' + JSON.stringify(newRepeatQuest));
+        repeatQuests.push(newRepeatQuest);
+        saveRepeatQuests();
+        debugPanel.log('💾 Saved repeat quests');
+        renderAll();
 
-      // 모달 닫기
-      var modal = document.getElementById('add-quest-modal');
-      if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-      }
+        // 폼 초기화
+        titleInput.value = '';
+        pointsInput.value = '20';
+        var dayCheckboxesAll = document.querySelectorAll('input[name="repeat-day"]');
+        for (var j = 0; j < dayCheckboxesAll.length; j++) {
+          dayCheckboxesAll[j].checked = false;
+        }
 
-      // 홈 탭으로 전환 (오늘 날짜인 경우)
-      if (date === getTodayDateString()) {
+        // 모달 닫기
+        var modal = document.getElementById('add-quest-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+
         switchTab('home');
-      }
+        debugPanel.log('✅ Added repeat quest: ' + title);
 
-      debugPanel.log('✅ Added quest: ' + title);
+      } else {
+        // 일반 퀘스트 처리
+        if (!date) {
+          alert('날짜를 선택하세요.');
+          isAddingQuest = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '추가';
+            submitBtn.removeAttribute('data-processing');
+            submitBtn.style.pointerEvents = '';
+          }
+          return;
+        }
+
+        // 하루 최대 100p 제한 확인
+        var DAILY_POINT_LIMIT = 100;
+        var dayQuests = quests.filter(function(q) { return q.date === date; });
+        var currentDayPoints = dayQuests.reduce(function(sum, q) { return sum + q.points; }, 0);
+
+        if (currentDayPoints + points > DAILY_POINT_LIMIT) {
+          var remaining = DAILY_POINT_LIMIT - currentDayPoints;
+          if (remaining <= 0) {
+            alert('해당 날짜는 이미 ' + DAILY_POINT_LIMIT + 'P가 등록되어 있어 더 이상 퀘스트를 추가할 수 없습니다.');
+          } else {
+            alert('해당 날짜에 추가 가능한 포인트는 ' + remaining + 'P입니다.\n(현재 ' + currentDayPoints + 'P / 최대 ' + DAILY_POINT_LIMIT + 'P)');
+          }
+          isAddingQuest = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '추가';
+            submitBtn.removeAttribute('data-processing');
+            submitBtn.style.pointerEvents = '';
+          }
+          return;
+        }
+
+        // 일반 퀘스트 생성 및 추가
+        var newQuest = {
+          id: Date.now().toString(),
+          title: title,
+          points: points,
+          date: date,
+          completed: false,
+          verified: false,
+          createdAt: new Date().toISOString()
+        };
+
+        debugPanel.log('➕ Creating quest: ' + JSON.stringify(newQuest));
+        quests.push(newQuest);
+        debugPanel.log('📊 Total quests: ' + quests.length);
+        saveQuests();
+        debugPanel.log('💾 Saved quests');
+        renderAll();
+        debugPanel.log('🔄 Rendered all');
+
+        // 폼 초기화
+        titleInput.value = '';
+        pointsInput.value = '20';
+        dateInput.value = getTodayDateString();
+
+        // 모달 닫기
+        var modal = document.getElementById('add-quest-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+
+        // 홈 탭으로 전환 (오늘 날짜인 경우)
+        if (date === getTodayDateString()) {
+          switchTab('home');
+        }
+
+        debugPanel.log('✅ Added quest: ' + title);
+      }
     } catch (error) {
       debugPanel.log('❌ Error adding quest: ' + error.message);
       console.error('Error adding quest:', error);
@@ -726,9 +1156,21 @@
   // ==========================================
   // 퀘스트 완료
   // ==========================================
-  window.openCompleteModal = function(questId) {
-    var quest = quests.find(function(q) { return q.id === questId; });
-    if (!quest || quest.completed) return;
+  var isCompletingRepeatQuest = false; // 반복 퀘스트 완료 중인지 여부
+
+  window.openCompleteModal = function(questId, isRepeat) {
+    var quest;
+    isCompletingRepeatQuest = isRepeat || false;
+
+    if (isRepeat) {
+      quest = repeatQuests.find(function(q) { return q.id === questId; });
+      var today = getTodayDateString();
+      var isCompleted = quest && quest.completedDates && quest.completedDates[today];
+      if (!quest || isCompleted) return;
+    } else {
+      quest = quests.find(function(q) { return q.id === questId; });
+      if (!quest || quest.completed) return;
+    }
 
     selectedQuestId = questId;
 
@@ -748,7 +1190,7 @@
     var modal = document.getElementById('complete-quest-modal');
     if (modal) modal.classList.add('active');
 
-    debugPanel.log('📷 Opened complete modal for: ' + quest.title);
+    debugPanel.log('📷 Opened complete modal for: ' + quest.title + (isRepeat ? ' (repeat)' : ''));
   };
 
   function initImageUpload() {
@@ -822,22 +1264,42 @@
   }
 
   function completeQuest(questId, imageBase64) {
-    var quest = quests.find(function(q) { return q.id === questId; });
-    if (!quest) return;
+    if (isCompletingRepeatQuest) {
+      // 반복 퀘스트 완료 처리
+      var repeatQuest = repeatQuests.find(function(q) { return q.id === questId; });
+      if (!repeatQuest) return;
 
-    quest.completed = true;
-    quest.completedAt = new Date().toISOString();
-    quest.image = imageBase64;
-    quest.verified = true;
+      var today = getTodayDateString();
+      if (!repeatQuest.completedDates) {
+        repeatQuest.completedDates = {};
+      }
+      repeatQuest.completedDates[today] = new Date().toISOString();
 
-    saveQuests();
+      // 반복 퀘스트의 이미지는 별도로 저장하지 않음 (용량 문제)
+      // 필요시 별도 저장소에 저장 가능
 
-    // 이미지 개수 제한 체크 및 자동 정리
-    cleanupOldQuestsIfNeeded();
+      saveRepeatQuests();
+      renderAll();
+      debugPanel.log('✅ Repeat quest completed: ' + repeatQuest.title);
+    } else {
+      // 일반 퀘스트 완료 처리
+      var quest = quests.find(function(q) { return q.id === questId; });
+      if (!quest) return;
 
-    renderAll();
+      quest.completed = true;
+      quest.completedAt = new Date().toISOString();
+      quest.image = imageBase64;
+      quest.verified = true;
 
-    debugPanel.log('✅ Quest completed: ' + quest.title);
+      saveQuests();
+
+      // 이미지 개수 제한 체크 및 자동 정리
+      cleanupOldQuestsIfNeeded();
+
+      renderAll();
+
+      debugPanel.log('✅ Quest completed: ' + quest.title);
+    }
   }
 
   // ==========================================
@@ -926,9 +1388,20 @@
   // 통계 업데이트
   // ==========================================
   function updateStats() {
-    // 총 포인트
-    var totalPoints = quests.filter(function(q) { return q.completed; })
+    // 일반 퀘스트 포인트
+    var singlePoints = quests.filter(function(q) { return q.completed; })
       .reduce(function(sum, q) { return sum + q.points; }, 0);
+
+    // 반복 퀘스트 포인트 (완료된 날짜별로 계산)
+    var repeatPoints = 0;
+    repeatQuests.forEach(function(rq) {
+      if (rq.completedDates) {
+        var completedCount = Object.keys(rq.completedDates).length;
+        repeatPoints += rq.points * completedCount;
+      }
+    });
+
+    var totalPoints = singlePoints + repeatPoints;
 
     var pointsEl = document.getElementById('total-points');
     if (pointsEl) pointsEl.textContent = totalPoints;
@@ -948,9 +1421,22 @@
 
     while (true) {
       var dateString = formatDateString(checkDate);
-      var dayQuests = quests.filter(function(q) { return q.date === dateString; });
-      var allCompleted = dayQuests.length > 0 &&
-                        dayQuests.every(function(q) { return q.completed; });
+      var dayOfWeek = checkDate.getDay();
+
+      // 일반 퀘스트
+      var singleQuests = quests.filter(function(q) { return q.date === dateString; });
+
+      // 해당 요일의 반복 퀘스트
+      var dayRepeatQuests = repeatQuests.filter(function(q) {
+        return q.repeatDays.indexOf(dayOfWeek) !== -1;
+      }).map(function(rq) {
+        var isCompleted = rq.completedDates && rq.completedDates[dateString];
+        return { completed: isCompleted || false };
+      });
+
+      var allDayQuests = singleQuests.concat(dayRepeatQuests);
+      var allCompleted = allDayQuests.length > 0 &&
+                        allDayQuests.every(function(q) { return q.completed; });
 
       if (allCompleted) {
         streak++;

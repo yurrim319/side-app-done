@@ -63,41 +63,73 @@
 
     <!-- 캘린더 탭 -->
     <div class="content" id="calendar-content">
-      <div class="calendar-header">
-        <h2 class="calendar-title" id="calendar-title">2026년 1월</h2>
-        <div class="calendar-nav">
-          <button class="calendar-nav-btn" id="prev-month">
-            <span>‹</span>
-          </button>
-          <button class="calendar-nav-btn" id="next-month">
-            <span>›</span>
-          </button>
+      <!-- 서브 탭 -->
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-subtab="calendar-view">캘린더</button>
+        <button class="sub-tab" data-subtab="quest-manage">퀘스트 관리</button>
+      </div>
+
+      <!-- 캘린더 보기 -->
+      <div class="sub-content active" id="calendar-view">
+        <div class="calendar-header">
+          <h2 class="calendar-title" id="calendar-title">2026년 1월</h2>
+          <div class="calendar-nav">
+            <button class="calendar-nav-btn" id="prev-month">
+              <span>‹</span>
+            </button>
+            <button class="calendar-nav-btn" id="next-month">
+              <span>›</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="calendar-container">
+          <div class="calendar-weekdays">
+            <div class="calendar-weekday">일</div>
+            <div class="calendar-weekday">월</div>
+            <div class="calendar-weekday">화</div>
+            <div class="calendar-weekday">수</div>
+            <div class="calendar-weekday">목</div>
+            <div class="calendar-weekday">금</div>
+            <div class="calendar-weekday">토</div>
+          </div>
+          <div class="calendar-grid" id="calendar-grid">
+            <!-- 달력 날짜가 동적으로 추가됨 -->
+          </div>
+        </div>
+
+        <div class="calendar-legend">
+          <div class="legend-item">
+            <div class="legend-icon legend-completed"></div>
+            <span>모두 완료</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon legend-partial"></div>
+            <span>일부 완료</span>
+          </div>
         </div>
       </div>
 
-      <div class="calendar-container">
-        <div class="calendar-weekdays">
-          <div class="calendar-weekday">일</div>
-          <div class="calendar-weekday">월</div>
-          <div class="calendar-weekday">화</div>
-          <div class="calendar-weekday">수</div>
-          <div class="calendar-weekday">목</div>
-          <div class="calendar-weekday">금</div>
-          <div class="calendar-weekday">토</div>
+      <!-- 퀘스트 관리 -->
+      <div class="sub-content" id="quest-manage">
+        <div class="manage-section">
+          <h3 class="manage-section-title">반복 퀘스트</h3>
+          <div class="manage-list" id="repeat-quest-list">
+            <!-- 반복 퀘스트 목록 -->
+          </div>
+          <div class="empty-state hidden" id="repeat-empty">
+            <p class="empty-state-text">반복 퀘스트가 없습니다</p>
+          </div>
         </div>
-        <div class="calendar-grid" id="calendar-grid">
-          <!-- 달력 날짜가 동적으로 추가됨 -->
-        </div>
-      </div>
 
-      <div class="calendar-legend">
-        <div class="legend-item">
-          <div class="legend-icon legend-completed"></div>
-          <span>모두 완료</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-icon legend-partial"></div>
-          <span>일부 완료</span>
+        <div class="manage-section">
+          <h3 class="manage-section-title">일반 퀘스트</h3>
+          <div class="manage-list" id="single-quest-list">
+            <!-- 일반 퀘스트 목록 -->
+          </div>
+          <div class="empty-state hidden" id="single-empty">
+            <p class="empty-state-text">일반 퀘스트가 없습니다</p>
+          </div>
         </div>
       </div>
     </div>
@@ -128,6 +160,12 @@
         <button class="modal-close" id="add-modal-close">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- 퀘스트 타입 탭 -->
+        <div class="quest-type-tabs">
+          <button class="quest-type-tab active" data-type="single">일반</button>
+          <button class="quest-type-tab" data-type="repeat">반복</button>
+        </div>
+
         <div class="form-group">
           <label class="form-label" for="quest-title">퀘스트 이름</label>
           <input class="form-input" type="text" id="quest-title"
@@ -138,9 +176,46 @@
           <input class="form-input" type="number" id="quest-points"
                  min="10" max="1000" step="10" value="20">
         </div>
-        <div class="form-group">
+
+        <!-- 일반 퀘스트: 날짜 선택 -->
+        <div class="form-group" id="single-date-group">
           <label class="form-label" for="quest-date">날짜</label>
           <input class="form-input" type="date" id="quest-date" required>
+        </div>
+
+        <!-- 반복 퀘스트: 요일 선택 -->
+        <div class="form-group hidden" id="repeat-days-group">
+          <label class="form-label">반복 요일</label>
+          <div class="weekday-selector">
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="0">
+              <span>일</span>
+            </label>
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="1">
+              <span>월</span>
+            </label>
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="2">
+              <span>화</span>
+            </label>
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="3">
+              <span>수</span>
+            </label>
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="4">
+              <span>목</span>
+            </label>
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="5">
+              <span>금</span>
+            </label>
+            <label class="weekday-chip">
+              <input type="checkbox" name="repeat-day" value="6">
+              <span>토</span>
+            </label>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

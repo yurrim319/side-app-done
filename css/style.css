@@ -1840,3 +1840,220 @@ input[type="date"].form-input::-webkit-clear-button {
     font-size: 14px;
   }
 }
+
+/* ==========================================
+   반복 퀘스트 관련 스타일
+   ========================================== */
+
+/* 퀘스트 타입 탭 */
+.quest-type-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.quest-type-tab {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: clamp(13px, 3vw, 14px);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.quest-type-tab.active {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+/* 요일 선택 */
+.weekday-selector {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.weekday-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weekday-chip input {
+  display: none;
+}
+
+.weekday-chip span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-secondary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: 50%;
+  font-size: clamp(13px, 3vw, 14px);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.weekday-chip input:checked + span {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+/* 반복 요일 배지 */
+.repeat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border: var(--border-thin) solid var(--border-color);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: clamp(10px, 2.5vw, 11px);
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-wide);
+  margin-left: var(--spacing-xs);
+}
+
+.repeat-badge-days {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 서브 탭 */
+.sub-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  padding: 0 var(--spacing-md);
+}
+
+.sub-tab {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: clamp(13px, 3vw, 14px);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.sub-tab.active {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+.sub-content {
+  display: none;
+}
+
+.sub-content.active {
+  display: block;
+}
+
+/* 퀘스트 관리 섹션 */
+.manage-section {
+  margin-bottom: var(--spacing-xl);
+  padding: 0 var(--spacing-md);
+}
+
+.manage-section-title {
+  font-size: clamp(15px, 3.5vw, 16px);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: var(--border-thin) solid var(--border-color);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background: var(--bg-primary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.manage-item-info {
+  flex: 1;
+}
+
+.manage-item-title {
+  font-size: clamp(14px, 3.5vw, 15px);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.manage-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: clamp(11px, 2.5vw, 12px);
+  color: var(--text-secondary);
+}
+
+.manage-item-days {
+  font-weight: 600;
+}
+
+.manage-item-points {
+  background: var(--bg-secondary);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-full);
+}
+
+.manage-item-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.manage-item-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: var(--border-thin) solid var(--border-color);
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.manage-item-btn:hover {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.manage-item-btn.delete:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
