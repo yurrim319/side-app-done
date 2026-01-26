@@ -2,6 +2,17 @@
   'use strict';
 
   var quests = [];
+  var repeatQuests = [];
+
+  // 배지 정의
+  var BADGES = [
+    { id: 'first_step', name: '첫 걸음', icon: '🎯', condition: function(stats) { return stats.totalCompleted >= 1; } },
+    { id: 'rookie', name: '루키', icon: '🌱', condition: function(stats) { return stats.totalCompleted >= 10; } },
+    { id: 'challenger', name: '챌린저', icon: '💪', condition: function(stats) { return stats.totalCompleted >= 50; } },
+    { id: 'week_streak', name: '일주일 연속', icon: '🔥', condition: function(stats) { return stats.streak >= 7; } },
+    { id: 'month_streak', name: '한달 연속', icon: '⭐', condition: function(stats) { return stats.streak >= 30; } },
+    { id: 'point_master', name: '포인트 마스터', icon: '🏆', condition: function(stats) { return stats.totalPoints >= 1000; } }
+  ];
 
   // ==========================================
   // 초기화
@@ -19,7 +30,10 @@
 
   function init() {
     loadQuests();
+    loadRepeatQuests();
     updateProfileStats();
+    renderWeeklyHeatmap();
+    renderBadges();
     renderCompletedQuests();
     initModal();
   }
@@ -37,12 +51,36 @@
     }
   }
 
+  function loadRepeatQuests() {
+    try {
+      var data = localStorage.getItem('repeatQuests');
+      repeatQuests = data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to load repeat quests:', error);
+      repeatQuests = [];
+    }
+  }
+
   // ==========================================
   // 프로필 통계
   // ==========================================
   function updateProfileStats() {
     var completedQuests = quests.filter(function(q) { return q.completed; });
-    var totalPoints = completedQuests.reduce(function(sum, q) { return sum + q.points; }, 0);
+    var singlePoints = completedQuests.reduce(function(sum, q) { return sum + q.points; }, 0);
+
+    // 반복 퀘스트 포인트 계산
+    var repeatPoints = 0;
+    var repeatCompletedCount = 0;
+    repeatQuests.forEach(function(rq) {
+      if (rq.completedDates) {
+        var count = Object.keys(rq.completedDates).length;
+        repeatCompletedCount += count;
+        repeatPoints += rq.points * count;
+      }
+    });
+
+    var totalPoints = singlePoints + repeatPoints;
+    var totalCompleted = completedQuests.length + repeatCompletedCount;
     var streak = calculateStreak();
 
     var pointsEl = document.getElementById('profile-points');
@@ -51,7 +89,7 @@
 
     if (pointsEl) pointsEl.textContent = totalPoints;
     if (streakEl) streakEl.textContent = streak + '일';
-    if (completedEl) completedEl.textContent = completedQuests.length + '개';
+    if (completedEl) completedEl.textContent = totalCompleted + '개';
   }
 
   function calculateStreak() {
@@ -94,6 +132,132 @@
     }
 
     return streak;
+  }
+
+  // ==========================================
+  // 주간 히트맵
+  // ==========================================
+  function getWeeklyActivity() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var weekData = [];
+    var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+
+    for (var i = 6; i >= 0; i--) {
+      var date = new Date(today);
+      date.setDate(date.getDate() - i);
+      var dateString = formatDateString(date);
+      var dayOfWeek = date.getDay();
+
+      // 해당 날짜의 일반 퀘스트
+      var dayQuests = quests.filter(function(q) { return q.date === dateString; });
+      var completedSingle = dayQuests.filter(function(q) { return q.completed; }).length;
+
+      // 해당 날짜의 반복 퀘스트
+      var dayRepeatQuests = repeatQuests.filter(function(rq) {
+        return rq.repeatDays && rq.repeatDays.indexOf(dayOfWeek) !== -1;
+      });
+      var completedRepeat = dayRepeatQuests.filter(function(rq) {
+        return rq.completedDates && rq.completedDates[dateString];
+      }).length;
+
+      var totalQuests = dayQuests.length + dayRepeatQuests.length;
+      var completedQuests = completedSingle + completedRepeat;
+      var rate = totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
+
+      weekData.push({
+        date: dateString,
+        dayName: dayNames[dayOfWeek],
+        total: totalQuests,
+        completed: completedQuests,
+        rate: rate
+      });
+    }
+
+    return weekData;
+  }
+
+  function renderWeeklyHeatmap() {
+    var container = document.getElementById('weekly-heatmap');
+    if (!container) return;
+
+    var weekData = getWeeklyActivity();
+    var html = '';
+
+    weekData.forEach(function(day) {
+      var levelClass = 'level-0';
+      if (day.rate === 100) {
+        levelClass = 'level-3';
+      } else if (day.rate >= 50) {
+        levelClass = 'level-2';
+      } else if (day.rate > 0) {
+        levelClass = 'level-1';
+      }
+
+      html += '<div class="heatmap-cell ' + levelClass + '">';
+      html += '<span class="heatmap-day">' + day.dayName + '</span>';
+      html += '<span class="heatmap-dot"></span>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ==========================================
+  // 성취 배지
+  // ==========================================
+  function getStats() {
+    var completedQuests = quests.filter(function(q) { return q.completed; });
+    var singlePoints = completedQuests.reduce(function(sum, q) { return sum + q.points; }, 0);
+
+    var repeatPoints = 0;
+    var repeatCompletedCount = 0;
+    repeatQuests.forEach(function(rq) {
+      if (rq.completedDates) {
+        var count = Object.keys(rq.completedDates).length;
+        repeatCompletedCount += count;
+        repeatPoints += rq.points * count;
+      }
+    });
+
+    return {
+      totalCompleted: completedQuests.length + repeatCompletedCount,
+      totalPoints: singlePoints + repeatPoints,
+      streak: calculateStreak()
+    };
+  }
+
+  function checkBadges() {
+    var stats = getStats();
+    var earned = [];
+
+    BADGES.forEach(function(badge) {
+      if (badge.condition(stats)) {
+        earned.push(badge.id);
+      }
+    });
+
+    return earned;
+  }
+
+  function renderBadges() {
+    var container = document.getElementById('badges-grid');
+    if (!container) return;
+
+    var earnedBadges = checkBadges();
+    var html = '';
+
+    BADGES.forEach(function(badge) {
+      var isEarned = earnedBadges.indexOf(badge.id) !== -1;
+      var itemClass = isEarned ? 'badge-item earned' : 'badge-item locked';
+
+      html += '<div class="' + itemClass + '">';
+      html += '<span class="badge-icon">' + badge.icon + '</span>';
+      html += '<span class="badge-name">' + badge.name + '</span>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
   }
 
   // ==========================================

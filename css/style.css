@@ -1631,6 +1631,98 @@ input[type="date"].form-input::-webkit-clear-button {
   letter-spacing: var(--letter-spacing-wide);
 }
 
+/* 주간 히트맵 */
+.weekly-heatmap {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.heatmap-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+}
+
+.heatmap-day {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.heatmap-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--color-gray-300);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.heatmap-cell.level-1 .heatmap-dot {
+  background: var(--color-gray-300);
+  border-color: var(--color-gray-300);
+}
+
+.heatmap-cell.level-2 .heatmap-dot {
+  background: var(--color-gray-500);
+  border-color: var(--color-gray-500);
+}
+
+.heatmap-cell.level-3 .heatmap-dot {
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+
+/* 성취 배지 */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: var(--border-thick) solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.badge-item.earned {
+  border-color: var(--color-black);
+}
+
+.badge-item.locked {
+  opacity: 0.4;
+}
+
+.badge-item.locked .badge-icon {
+  filter: grayscale(100%);
+}
+
+.badge-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.badge-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-weight: 500;
+}
+
+.badge-item.earned .badge-name {
+  color: var(--text-primary);
+}
+
 .no-photo {
   background: var(--bg-secondary);
   display: flex;
