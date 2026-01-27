@@ -1546,20 +1546,38 @@ if ('serviceWorker' in navigator) {
   // ==========================================
   // 리더보드 (Firebase)
   // ==========================================
+  var isLoggingIn = false; // 중복 로그인 방지 플래그
+
   function initLeaderboard() {
     var loginBtn = document.getElementById('google-login-btn');
     var logoutBtn = document.getElementById('logout-btn');
 
     if (loginBtn) {
       loginBtn.addEventListener('click', function() {
+        if (isLoggingIn) {
+          debugPanel.log('⏳ Login already in progress...');
+          return;
+        }
         if (window.firebaseAuth) {
+          isLoggingIn = true;
+          loginBtn.disabled = true;
+          loginBtn.textContent = '로그인 중...';
+
           window.firebaseAuth.loginWithGoogle()
             .then(function() {
               debugPanel.log('✅ Logged in successfully');
             })
             .catch(function(error) {
               debugPanel.log('❌ Login failed: ' + error.message);
-              alert('로그인에 실패했습니다: ' + error.message);
+              if (error.code !== 'auth/cancelled-popup-request' &&
+                  error.code !== 'auth/popup-closed-by-user') {
+                alert('로그인에 실패했습니다: ' + error.message);
+              }
+            })
+            .finally(function() {
+              isLoggingIn = false;
+              loginBtn.disabled = false;
+              loginBtn.textContent = 'Google로 로그인';
             });
         }
       }, false);
