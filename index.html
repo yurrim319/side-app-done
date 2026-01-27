@@ -146,14 +146,46 @@
       </div>
     </div>
 
-    <!-- 리더보드 탭 (임시) -->
+    <!-- 리더보드 탭 -->
     <div class="content" id="leaderboard-content">
       <div class="today-header">
         <h2 class="content-title">순위</h2>
       </div>
-      <div class="empty-state">
-        <p class="empty-state-icon">🏆</p>
-        <p class="empty-state-text">준비 중입니다</p>
+
+      <!-- 로그인 전 -->
+      <div class="auth-container" id="auth-container">
+        <div class="empty-state">
+          <p class="empty-state-icon">🏆</p>
+          <p class="empty-state-text">로그인하고 순위에 참여하세요!</p>
+          <button class="btn btn-primary google-login-btn" id="google-login-btn">
+            Google로 로그인
+          </button>
+        </div>
+      </div>
+
+      <!-- 로그인 후 -->
+      <div class="leaderboard-container hidden" id="leaderboard-container">
+        <!-- 내 순위 카드 -->
+        <div class="my-rank-card">
+          <div class="my-rank-info">
+            <img class="my-rank-avatar" id="my-avatar" src="" alt="프로필">
+            <div class="my-rank-details">
+              <span class="my-rank-name" id="my-name">사용자</span>
+              <span class="my-rank-points" id="my-points">0 P</span>
+            </div>
+          </div>
+          <div class="my-rank-number">
+            <span class="rank-label">내 순위</span>
+            <span class="rank-value" id="my-rank">#-</span>
+          </div>
+        </div>
+
+        <!-- 리더보드 목록 -->
+        <div class="leaderboard-list" id="leaderboard-list">
+          <!-- 동적으로 추가됨 -->
+        </div>
+
+        <button class="btn btn-secondary logout-btn" id="logout-btn">로그아웃</button>
       </div>
     </div>
 
@@ -286,6 +318,7 @@
   <!-- 모바일 디버깅 패널 (임시) -->
   <div id="debug-panel" style="position: fixed; bottom: 80px; left: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #0f0; padding: 10px; border-radius: 8px; font-size: 12px; max-height: 150px; overflow-y: auto; z-index: 300; display: none; font-family: monospace;"></div>
 
+  <script type="module" src="js/firebase.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

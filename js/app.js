@@ -1543,6 +1543,189 @@ if ('serviceWorker' in navigator) {
     }, false);
   }
 
+  // ==========================================
+  // 리더보드 (Firebase)
+  // ==========================================
+  function initLeaderboard() {
+    var loginBtn = document.getElementById('google-login-btn');
+    var logoutBtn = document.getElementById('logout-btn');
+
+    if (loginBtn) {
+      loginBtn.addEventListener('click', function() {
+        if (window.firebaseAuth) {
+          window.firebaseAuth.loginWithGoogle()
+            .then(function() {
+              debugPanel.log('✅ Logged in successfully');
+            })
+            .catch(function(error) {
+              debugPanel.log('❌ Login failed: ' + error.message);
+              alert('로그인에 실패했습니다: ' + error.message);
+            });
+        }
+      }, false);
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function() {
+        if (window.firebaseAuth) {
+          window.firebaseAuth.logout()
+            .then(function() {
+              debugPanel.log('✅ Logged out successfully');
+            })
+            .catch(function(error) {
+              debugPanel.log('❌ Logout failed: ' + error.message);
+            });
+        }
+      }, false);
+    }
+
+    // Firebase 인증 상태 변경 리스너
+    if (window.firebaseAuth) {
+      window.firebaseAuth.onAuthStateChanged(function(user) {
+        updateLeaderboardUI(user);
+      });
+    }
+  }
+
+  function updateLeaderboardUI(user) {
+    var authContainer = document.getElementById('auth-container');
+    var leaderboardContainer = document.getElementById('leaderboard-container');
+
+    if (!authContainer || !leaderboardContainer) return;
+
+    if (user) {
+      // 로그인됨
+      authContainer.classList.add('hidden');
+      leaderboardContainer.classList.remove('hidden');
+
+      // 내 정보 업데이트
+      var avatarEl = document.getElementById('my-avatar');
+      var nameEl = document.getElementById('my-name');
+      var pointsEl = document.getElementById('my-points');
+
+      if (avatarEl) avatarEl.src = user.photoURL || '';
+      if (nameEl) nameEl.textContent = user.displayName || '사용자';
+
+      // 포인트 동기화
+      syncUserPoints();
+
+      // 리더보드 로드
+      loadLeaderboard();
+    } else {
+      // 로그아웃됨
+      authContainer.classList.remove('hidden');
+      leaderboardContainer.classList.add('hidden');
+    }
+  }
+
+  function syncUserPoints() {
+    // 로컬 포인트 계산
+    var singlePoints = quests.filter(function(q) { return q.completed; })
+      .reduce(function(sum, q) { return sum + q.points; }, 0);
+
+    var repeatPoints = 0;
+    repeatQuests.forEach(function(rq) {
+      if (rq.completedDates) {
+        var completedCount = Object.keys(rq.completedDates).length;
+        repeatPoints += rq.points * completedCount;
+      }
+    });
+
+    var totalPoints = singlePoints + repeatPoints;
+    var streak = calculateStreak();
+
+    // Firebase에 업데이트
+    if (window.firebaseDB) {
+      window.firebaseDB.updateUserPoints(totalPoints - (window.lastSyncedPoints || 0));
+      window.firebaseDB.updateUserStreak(streak);
+      window.lastSyncedPoints = totalPoints;
+    }
+
+    // UI 업데이트
+    var myPointsEl = document.getElementById('my-points');
+    if (myPointsEl) myPointsEl.textContent = totalPoints + ' P';
+  }
+
+  function loadLeaderboard() {
+    if (!window.firebaseDB) return;
+
+    var listEl = document.getElementById('leaderboard-list');
+    var myRankEl = document.getElementById('my-rank');
+
+    // 리더보드 로드
+    window.firebaseDB.getLeaderboard(10)
+      .then(function(leaderboard) {
+        if (listEl) {
+          var html = leaderboard.map(function(user, index) {
+            var rank = index + 1;
+            var rankClass = 'leaderboard-item';
+            var rankIcon = rank;
+
+            if (rank <= 3) {
+              rankClass += ' top-3 rank-' + rank;
+              if (rank === 1) rankIcon = '🥇';
+              else if (rank === 2) rankIcon = '🥈';
+              else if (rank === 3) rankIcon = '🥉';
+            }
+
+            return '<div class="' + rankClass + '">' +
+              '<div class="leaderboard-rank">' + rankIcon + '</div>' +
+              '<img class="leaderboard-avatar" src="' + (user.photoURL || '') + '" alt="">' +
+              '<div class="leaderboard-info">' +
+                '<div class="leaderboard-name">' + escapeHtml(user.displayName || '사용자') + '</div>' +
+                '<div class="leaderboard-streak">' + (user.streak || 0) + '일 연속</div>' +
+              '</div>' +
+              '<div class="leaderboard-points">' + (user.totalPoints || 0) + ' P</div>' +
+            '</div>';
+          }).join('');
+
+          listEl.innerHTML = html;
+        }
+      })
+      .catch(function(error) {
+        debugPanel.log('❌ Failed to load leaderboard: ' + error.message);
+      });
+
+    // 내 순위 로드
+    window.firebaseDB.getMyRank()
+      .then(function(rank) {
+        if (myRankEl && rank) {
+          myRankEl.textContent = '#' + rank;
+        }
+      })
+      .catch(function(error) {
+        debugPanel.log('❌ Failed to get my rank: ' + error.message);
+      });
+  }
+
+  // 리더보드 탭 전환 시 새로고침
+  var originalSwitchTab = switchTab;
+  switchTab = function(tab, saveToStorage) {
+    originalSwitchTab(tab, saveToStorage);
+    if (tab === 'leaderboard' && window.firebaseAuth) {
+      var user = window.firebaseAuth.getCurrentUser();
+      if (user) {
+        syncUserPoints();
+        loadLeaderboard();
+      }
+    }
+  };
+
+  // Firebase 로드 대기 후 리더보드 초기화
+  function waitForFirebase() {
+    if (window.firebaseReady) {
+      console.log('✅ Firebase is ready, initializing leaderboard');
+      initLeaderboard();
+    } else {
+      console.log('⏳ Waiting for Firebase...');
+      window.addEventListener('firebaseReady', function() {
+        console.log('✅ Firebase ready event received');
+        initLeaderboard();
+      });
+    }
+  }
+  waitForFirebase();
+
   // 전역 함수 노출 (필요한 경우)
   debugPanel.log('🎉 App ready!');
 
