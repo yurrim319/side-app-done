@@ -1690,11 +1690,10 @@ if ('serviceWorker' in navigator) {
     var totalPoints = singlePoints + repeatPoints;
     var streak = calculateStreak();
 
-    // Firebase에 업데이트
-    if (window.firebaseDB) {
-      window.firebaseDB.updateUserPoints(totalPoints - (window.lastSyncedPoints || 0));
+    // Firebase에 업데이트 (절대값으로 설정)
+    if (window.firebaseDB && window.firebaseDB.setUserPoints) {
+      window.firebaseDB.setUserPoints(totalPoints);
       window.firebaseDB.updateUserStreak(streak);
-      window.lastSyncedPoints = totalPoints;
     }
 
     // UI 업데이트

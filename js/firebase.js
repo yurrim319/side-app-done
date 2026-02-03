@@ -101,12 +101,22 @@ async function logout() {
   }
 }
 
-// 유저 포인트 업데이트
+// 유저 포인트 업데이트 (증분)
 async function updateUserPoints(points) {
   if (!currentUser) return;
 
   await updateDoc(doc(db, 'users', currentUser.uid), {
     totalPoints: increment(points),
+    updatedAt: serverTimestamp()
+  });
+}
+
+// 유저 포인트 설정 (절대값)
+async function setUserPoints(totalPoints) {
+  if (!currentUser) return;
+
+  await updateDoc(doc(db, 'users', currentUser.uid), {
+    totalPoints: totalPoints,
     updatedAt: serverTimestamp()
   });
 }
@@ -437,11 +447,10 @@ async function saveCompletedQuest(quest) {
 
 // 특정 사용자의 완료된 퀘스트 가져오기
 async function getUserCompletedQuests(userId, limitCount = 20) {
+  // 인덱스 없이 작동하도록 where만 사용하고 JS에서 정렬
   const q = query(
     collection(db, 'completedQuests'),
-    where('userId', '==', userId),
-    orderBy('completedAt', 'desc'),
-    limit(limitCount)
+    where('userId', '==', userId)
   );
 
   const snapshot = await getDocs(q);
@@ -456,7 +465,9 @@ async function getUserCompletedQuests(userId, limitCount = 20) {
     });
   });
 
-  return quests;
+  // JS에서 정렬 및 제한
+  quests.sort((a, b) => b.completedAt - a.completedAt);
+  return quests.slice(0, limitCount);
 }
 
 // 친구들의 피드 가져오기 (나 + 친구들의 최근 완료 퀘스트)
@@ -509,6 +520,7 @@ window.firebaseAuth = {
 
 window.firebaseDB = {
   updateUserPoints,
+  setUserPoints,
   updateUserStreak,
   getLeaderboard,
   getMyRank,
