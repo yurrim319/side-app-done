@@ -150,29 +150,18 @@
   // ==========================================
   // 피드 로드 (완료한 퀘스트)
   // ==========================================
-  function loadFeed() {
+  async function loadFeed() {
     var feedEl = document.getElementById('user-feed');
     var emptyEl = document.getElementById('empty-feed');
     if (!feedEl || !emptyEl) return;
 
-    // 로컬 스토리지에서 퀘스트 로드 (자신의 프로필일 때만)
-    // 다른 사용자의 퀘스트는 Firebase에서 가져와야 하지만,
-    // 현재는 로컬 스토리지 기반이므로 자신의 프로필만 표시
-    if (!isOwnProfile) {
-      feedEl.innerHTML = '';
-      emptyEl.classList.remove('hidden');
-      emptyEl.querySelector('p:last-child').textContent = '퀘스트 피드는 준비 중입니다';
-      return;
-    }
-
     try {
-      var data = localStorage.getItem('quests');
-      var quests = data ? JSON.parse(data) : [];
-      var completedQuests = quests
-        .filter(function(q) { return q.completed; })
-        .sort(function(a, b) {
-          return new Date(b.completedAt) - new Date(a.completedAt);
-        });
+      // Firestore에서 해당 사용자의 완료된 퀘스트 가져오기
+      var completedQuests = [];
+
+      if (window.firebaseDB && window.firebaseDB.getUserCompletedQuests) {
+        completedQuests = await window.firebaseDB.getUserCompletedQuests(userId, 20);
+      }
 
       if (completedQuests.length === 0) {
         feedEl.innerHTML = '';
@@ -183,12 +172,13 @@
       emptyEl.classList.add('hidden');
 
       var html = completedQuests.map(function(quest) {
+        var questData = JSON.stringify(quest).replace(/'/g, '&#39;');
         if (quest.image) {
-          return '<div class="feed-grid-item" data-quest=\'' + JSON.stringify(quest).replace(/'/g, '&#39;') + '\'>' +
+          return '<div class="feed-grid-item" data-quest=\'' + questData + '\'>' +
             '<img src="' + quest.image + '" alt="">' +
           '</div>';
         } else {
-          return '<div class="feed-grid-item" data-quest=\'' + JSON.stringify(quest).replace(/'/g, '&#39;') + '\'>' +
+          return '<div class="feed-grid-item" data-quest=\'' + questData + '\'>' +
             '<div class="no-image">📝</div>' +
           '</div>';
         }
@@ -205,6 +195,8 @@
       });
     } catch (error) {
       console.error('피드 로드 실패:', error);
+      feedEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
     }
   }
 

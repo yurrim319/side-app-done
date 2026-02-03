@@ -415,6 +415,88 @@ async function isFriendWith(userId) {
   return myFriends.includes(userId);
 }
 
+// ==================== 피드 기능 ====================
+
+// 완료된 퀘스트 저장
+async function saveCompletedQuest(quest) {
+  if (!currentUser) return null;
+
+  const questData = {
+    userId: currentUser.uid,
+    userName: currentUser.displayName,
+    userPhoto: currentUser.photoURL,
+    title: quest.title,
+    points: quest.points || 20,
+    image: quest.image || null,
+    completedAt: serverTimestamp()
+  };
+
+  const docRef = await addDoc(collection(db, 'completedQuests'), questData);
+  return docRef.id;
+}
+
+// 특정 사용자의 완료된 퀘스트 가져오기
+async function getUserCompletedQuests(userId, limitCount = 20) {
+  const q = query(
+    collection(db, 'completedQuests'),
+    where('userId', '==', userId),
+    orderBy('completedAt', 'desc'),
+    limit(limitCount)
+  );
+
+  const snapshot = await getDocs(q);
+  const quests = [];
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    quests.push({
+      id: doc.id,
+      ...data,
+      completedAt: data.completedAt?.toDate?.() || new Date()
+    });
+  });
+
+  return quests;
+}
+
+// 친구들의 피드 가져오기 (나 + 친구들의 최근 완료 퀘스트)
+async function getFriendsFeed(limitCount = 30) {
+  if (!currentUser) return [];
+
+  // 내 친구 목록 가져오기
+  const myDoc = await getDoc(doc(db, 'users', currentUser.uid));
+  if (!myDoc.exists()) return [];
+
+  const friendIds = myDoc.data().friends || [];
+  const userIds = [currentUser.uid, ...friendIds];
+
+  // 모든 사용자의 완료 퀘스트 가져오기
+  const allQuests = [];
+
+  for (const userId of userIds) {
+    const q = query(
+      collection(db, 'completedQuests'),
+      where('userId', '==', userId),
+      orderBy('completedAt', 'desc'),
+      limit(10)
+    );
+
+    const snapshot = await getDocs(q);
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      allQuests.push({
+        id: doc.id,
+        ...data,
+        completedAt: data.completedAt?.toDate?.() || new Date()
+      });
+    });
+  }
+
+  // 시간순 정렬 후 제한
+  allQuests.sort((a, b) => b.completedAt - a.completedAt);
+  return allQuests.slice(0, limitCount);
+}
+
 // 전역으로 내보내기
 window.firebaseAuth = {
   loginWithGoogle,
@@ -444,7 +526,11 @@ window.firebaseDB = {
   // 사용자 프로필 조회
   getUserProfile,
   getUserFriends,
-  isFriendWith
+  isFriendWith,
+  // 피드 기능
+  saveCompletedQuest,
+  getUserCompletedQuests,
+  getFriendsFeed
 };
 
 // Firebase 로드 완료 알림

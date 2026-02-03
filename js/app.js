@@ -1306,6 +1306,13 @@ if ('serviceWorker' in navigator) {
       saveRepeatQuests();
       renderAll();
       debugPanel.log('✅ Repeat quest completed: ' + repeatQuest.title);
+
+      // Firestore에 피드로 저장
+      saveQuestToFeed({
+        title: repeatQuest.title,
+        points: repeatQuest.points || 20,
+        image: imageBase64
+      });
     } else {
       // 일반 퀘스트 완료 처리
       var quest = quests.find(function(q) { return q.id === questId; });
@@ -1324,6 +1331,26 @@ if ('serviceWorker' in navigator) {
       renderAll();
 
       debugPanel.log('✅ Quest completed: ' + quest.title);
+
+      // Firestore에 피드로 저장
+      saveQuestToFeed({
+        title: quest.title,
+        points: quest.points || 20,
+        image: imageBase64
+      });
+    }
+  }
+
+  // Firestore에 완료된 퀘스트 저장 (피드용)
+  function saveQuestToFeed(quest) {
+    if (window.firebaseDB && window.firebaseDB.saveCompletedQuest) {
+      window.firebaseDB.saveCompletedQuest(quest)
+        .then(function() {
+          debugPanel.log('📤 Quest saved to feed');
+        })
+        .catch(function(error) {
+          console.error('피드 저장 실패:', error);
+        });
     }
   }
 
