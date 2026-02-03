@@ -1681,7 +1681,7 @@ if ('serviceWorker' in navigator) {
 
           var html = leaderboard.map(function(user, index) {
             var rank = index + 1;
-            var rankClass = 'leaderboard-item';
+            var rankClass = 'leaderboard-item clickable';
             var rankIcon = rank;
 
             if (rank <= 3) {
@@ -1691,7 +1691,7 @@ if ('serviceWorker' in navigator) {
               else if (rank === 3) rankIcon = '🥉';
             }
 
-            return '<div class="' + rankClass + '">' +
+            return '<div class="' + rankClass + '" data-user-id="' + user.id + '">' +
               '<div class="leaderboard-rank">' + rankIcon + '</div>' +
               '<img class="leaderboard-avatar" src="' + (user.photoURL || '') + '" alt="">' +
               '<div class="leaderboard-info">' +
@@ -1703,6 +1703,16 @@ if ('serviceWorker' in navigator) {
           }).join('');
 
           listEl.innerHTML = html;
+
+          // 프로필 클릭 이벤트
+          listEl.querySelectorAll('.leaderboard-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+              var userId = item.getAttribute('data-user-id');
+              if (userId) {
+                window.location.href = 'user.html?id=' + userId;
+              }
+            });
+          });
         }
       })
       .catch(function(error) {

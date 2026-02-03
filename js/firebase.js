@@ -375,6 +375,46 @@ async function removeFriend(friendId) {
   return true;
 }
 
+// ==================== 사용자 프로필 조회 ====================
+
+// 특정 사용자 프로필 가져오기 (userId로)
+async function getUserProfile(userId) {
+  const userDoc = await getDoc(doc(db, 'users', userId));
+  if (!userDoc.exists()) return null;
+
+  return { id: userDoc.id, ...userDoc.data() };
+}
+
+// 특정 사용자의 친구 목록 가져오기
+async function getUserFriends(userId) {
+  const userDoc = await getDoc(doc(db, 'users', userId));
+  if (!userDoc.exists()) return [];
+
+  const friendIds = userDoc.data().friends || [];
+  if (friendIds.length === 0) return [];
+
+  const friends = [];
+  for (const friendId of friendIds) {
+    const friendDoc = await getDoc(doc(db, 'users', friendId));
+    if (friendDoc.exists()) {
+      friends.push({ id: friendDoc.id, ...friendDoc.data() });
+    }
+  }
+
+  return friends;
+}
+
+// 나와 특정 사용자가 친구인지 확인
+async function isFriendWith(userId) {
+  if (!currentUser) return false;
+
+  const myDoc = await getDoc(doc(db, 'users', currentUser.uid));
+  if (!myDoc.exists()) return false;
+
+  const myFriends = myDoc.data().friends || [];
+  return myFriends.includes(userId);
+}
+
 // 전역으로 내보내기
 window.firebaseAuth = {
   loginWithGoogle,
@@ -400,7 +440,11 @@ window.firebaseDB = {
   getFriends,
   removeFriend,
   getFriendsLeaderboard,
-  getMyRankAmongFriends
+  getMyRankAmongFriends,
+  // 사용자 프로필 조회
+  getUserProfile,
+  getUserFriends,
+  isFriendWith
 };
 
 // Firebase 로드 완료 알림

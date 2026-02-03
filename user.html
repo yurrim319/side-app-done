@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>프로필 - done?</title>
+  <!-- Favicon -->
+  <link rel="icon" href="icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="done?">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="back-btn">←</a>
+      <h1 class="app-title" id="page-title">프로필</h1>
+      <div class="header-right"></div>
+    </div>
+  </header>
+
+  <!-- 프로필 컨텐츠 -->
+  <main class="user-profile-container">
+    <!-- 프로필 헤더 (인스타그램 스타일) -->
+    <section class="user-profile-header">
+      <div class="user-profile-top">
+        <div class="user-avatar-large" id="user-avatar">
+          <span class="avatar-placeholder">👤</span>
+        </div>
+        <div class="user-stats-row">
+          <div class="user-stat">
+            <span class="user-stat-value" id="user-points">0</span>
+            <span class="user-stat-label">포인트</span>
+          </div>
+          <div class="user-stat">
+            <span class="user-stat-value" id="user-friends-count">0</span>
+            <span class="user-stat-label">친구</span>
+          </div>
+          <div class="user-stat">
+            <span class="user-stat-value" id="user-streak">0</span>
+            <span class="user-stat-label">연속</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="user-profile-info">
+        <h2 class="user-display-name" id="user-name">사용자</h2>
+        <p class="user-friend-code" id="user-friend-code"></p>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="user-profile-actions" id="profile-actions">
+        <!-- 동적으로 추가됨 -->
+      </div>
+    </section>
+
+    <!-- 탭 네비게이션 -->
+    <nav class="user-profile-tabs">
+      <button class="user-tab-btn active" data-tab="feed">피드</button>
+      <button class="user-tab-btn" data-tab="friends">친구</button>
+    </nav>
+
+    <!-- 탭 컨텐츠 -->
+    <div class="user-tab-content">
+      <!-- 피드 탭 -->
+      <section class="user-tab-pane active" id="tab-feed">
+        <div class="user-feed-grid" id="user-feed">
+          <!-- 동적으로 추가됨 -->
+        </div>
+        <div class="empty-feed hidden" id="empty-feed">
+          <p class="empty-icon">📷</p>
+          <p>아직 완료한 퀘스트가 없습니다</p>
+        </div>
+      </section>
+
+      <!-- 친구 탭 -->
+      <section class="user-tab-pane" id="tab-friends">
+        <div class="user-friends-list" id="user-friends-list">
+          <!-- 동적으로 추가됨 -->
+        </div>
+        <div class="empty-friends-tab hidden" id="empty-friends-tab">
+          <p class="empty-icon">👥</p>
+          <p>아직 친구가 없습니다</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 퀘스트 상세 모달 -->
+  <div class="modal" id="quest-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">퀘스트</h2>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="quest-modal-image" id="quest-modal-image"></div>
+        <div class="quest-modal-info">
+          <h3 id="quest-modal-title"></h3>
+          <p id="quest-modal-date"></p>
+          <p id="quest-modal-points"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/firebase.js"></script>
+  <script src="js/user.js"></script>
+</body>
+</html>

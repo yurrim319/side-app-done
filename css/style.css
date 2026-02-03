@@ -2524,3 +2524,306 @@ input[type="date"].form-input::-webkit-clear-button {
   color: var(--text-secondary);
   font-size: 14px;
 }
+
+/* ==========================================
+   사용자 프로필 페이지 (인스타그램 스타일)
+   ========================================== */
+
+.user-profile-container {
+  padding-top: calc(var(--header-height) + var(--spacing-md));
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* 프로필 헤더 */
+.user-profile-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: var(--border-thick) solid var(--border-color);
+}
+
+.user-profile-top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.user-avatar-large {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  border-radius: 50%;
+  border: 3px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+
+.user-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  font-size: 36px;
+}
+
+.user-stats-row {
+  display: flex;
+  flex: 1;
+  justify-content: space-around;
+}
+
+.user-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.user-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.user-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.user-profile-info {
+  margin-bottom: var(--spacing-md);
+}
+
+.user-display-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.user-friend-code {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-family: monospace;
+}
+
+/* 프로필 액션 버튼 */
+.user-profile-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.profile-action-btn {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 14px;
+  font-weight: 600;
+  border: var(--border-thick) solid var(--border-color);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.profile-action-btn.primary {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.profile-action-btn.secondary {
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+.profile-action-btn.danger {
+  background: var(--color-white);
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* 탭 네비게이션 */
+.user-profile-tabs {
+  display: flex;
+  border-bottom: var(--border-thick) solid var(--border-color);
+}
+
+.user-tab-btn {
+  flex: 1;
+  padding: var(--spacing-md);
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+}
+
+.user-tab-btn.active {
+  color: var(--text-primary);
+}
+
+.user-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-black);
+}
+
+/* 탭 컨텐츠 */
+.user-tab-content {
+  min-height: 200px;
+}
+
+.user-tab-pane {
+  display: none;
+  padding: var(--spacing-md);
+}
+
+.user-tab-pane.active {
+  display: block;
+}
+
+/* 피드 그리드 (인스타그램 스타일) */
+.user-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.feed-grid-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  position: relative;
+}
+
+.feed-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feed-grid-item .no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--bg-secondary);
+}
+
+/* 친구 목록 */
+.user-friends-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-friend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-gray-200);
+  cursor: pointer;
+}
+
+.user-friend-item:last-child {
+  border-bottom: none;
+}
+
+.user-friend-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: var(--border-thick) solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+
+.user-friend-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-friend-info {
+  flex: 1;
+}
+
+.user-friend-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-friend-points {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 빈 상태 */
+.empty-feed,
+.empty-friends-tab {
+  padding: var(--spacing-xl) var(--spacing-md);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 퀘스트 모달 */
+.quest-modal-image {
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.quest-modal-image img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.quest-modal-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.quest-modal-info p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+/* 클릭 가능한 리더보드 아이템 */
+.leaderboard-item.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.leaderboard-item.clickable:hover {
+  background-color: var(--bg-secondary);
+}
+
+.leaderboard-item.clickable:active {
+  background-color: var(--color-gray-200);
+}
