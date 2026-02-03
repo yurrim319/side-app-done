@@ -36,7 +36,250 @@
     renderBadges();
     renderCompletedQuests();
     initModal();
+    initFriendSection();
   }
+
+  // ==========================================
+  // 친구 기능
+  // ==========================================
+  function initFriendSection() {
+    // Firebase 준비 대기
+    if (window.firebaseReady) {
+      setupFriendListeners();
+    } else {
+      window.addEventListener('firebaseReady', setupFriendListeners);
+    }
+  }
+
+  function setupFriendListeners() {
+    // 인증 상태 변경 시
+    window.firebaseAuth.onAuthStateChanged(function(user) {
+      var friendSection = document.getElementById('friend-section');
+      if (user) {
+        if (friendSection) friendSection.classList.remove('hidden');
+        loadFriendData();
+      } else {
+        if (friendSection) friendSection.classList.add('hidden');
+      }
+    });
+
+    // 친구 코드 복사 버튼
+    var copyBtn = document.getElementById('copy-friend-code');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', copyFriendCode);
+    }
+
+    // 친구 추가 버튼
+    var addBtn = document.getElementById('add-friend-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', addFriend);
+    }
+
+    // 친구 코드 입력 엔터키
+    var codeInput = document.getElementById('friend-code-input');
+    if (codeInput) {
+      codeInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          addFriend();
+        }
+      });
+    }
+  }
+
+  function loadFriendData() {
+    loadMyFriendCode();
+    loadFriendRequests();
+    loadFriendList();
+  }
+
+  // 내 친구 코드 표시
+  async function loadMyFriendCode() {
+    if (!window.firebaseDB) return;
+
+    try {
+      var profile = await window.firebaseDB.getMyProfile();
+      var codeEl = document.getElementById('my-friend-code');
+      if (codeEl && profile && profile.friendCode) {
+        codeEl.textContent = profile.friendCode;
+      }
+    } catch (error) {
+      console.error('친구 코드 로드 실패:', error);
+    }
+  }
+
+  // 친구 코드 복사
+  function copyFriendCode() {
+    var codeEl = document.getElementById('my-friend-code');
+    if (!codeEl) return;
+
+    var code = codeEl.textContent;
+    if (code === '------') return;
+
+    navigator.clipboard.writeText(code).then(function() {
+      alert('친구 코드가 복사되었습니다: ' + code);
+    }).catch(function() {
+      // fallback for older browsers
+      var textArea = document.createElement('textarea');
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('친구 코드가 복사되었습니다: ' + code);
+    });
+  }
+
+  // 친구 추가
+  async function addFriend() {
+    var input = document.getElementById('friend-code-input');
+    if (!input) return;
+
+    var code = input.value.trim().toUpperCase();
+    if (!code || code.length !== 6) {
+      alert('6자리 친구 코드를 입력해주세요');
+      return;
+    }
+
+    try {
+      // 친구 코드로 유저 찾기
+      var user = await window.firebaseDB.findUserByFriendCode(code);
+      if (!user) {
+        alert('존재하지 않는 친구 코드입니다');
+        return;
+      }
+
+      // 친구 요청 보내기
+      await window.firebaseDB.sendFriendRequest(user.id);
+      alert(user.displayName + '님에게 친구 요청을 보냈습니다');
+      input.value = '';
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  // 받은 친구 요청 로드
+  async function loadFriendRequests() {
+    if (!window.firebaseDB) return;
+
+    var listEl = document.getElementById('friend-request-list');
+    var emptyEl = document.getElementById('empty-requests');
+    var countEl = document.getElementById('request-count');
+    if (!listEl || !emptyEl) return;
+
+    try {
+      var requests = await window.firebaseDB.getPendingFriendRequests();
+
+      if (countEl) {
+        countEl.textContent = requests.length > 0 ? '(' + requests.length + ')' : '';
+      }
+
+      if (requests.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+
+      var html = requests.map(function(req) {
+        return '<div class="friend-request-item" data-request-id="' + req.id + '">' +
+          '<div class="friend-avatar">' +
+            (req.fromPhoto ? '<img src="' + req.fromPhoto + '" alt="">' : '👤') +
+          '</div>' +
+          '<div class="friend-info">' +
+            '<div class="friend-name">' + escapeHtml(req.fromName || '익명') + '</div>' +
+          '</div>' +
+          '<div class="friend-actions">' +
+            '<button class="accept-btn" onclick="acceptRequest(\'' + req.id + '\')">수락</button>' +
+            '<button class="reject-btn" onclick="rejectRequest(\'' + req.id + '\')">거절</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      listEl.innerHTML = html;
+    } catch (error) {
+      console.error('친구 요청 로드 실패:', error);
+    }
+  }
+
+  // 친구 목록 로드
+  async function loadFriendList() {
+    if (!window.firebaseDB) return;
+
+    var listEl = document.getElementById('friend-list');
+    var emptyEl = document.getElementById('empty-friends');
+    var countEl = document.getElementById('friend-count');
+    if (!listEl || !emptyEl) return;
+
+    try {
+      var friends = await window.firebaseDB.getFriends();
+
+      if (countEl) {
+        countEl.textContent = friends.length > 0 ? '(' + friends.length + ')' : '';
+      }
+
+      if (friends.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+
+      var html = friends.map(function(friend) {
+        return '<div class="friend-item" data-friend-id="' + friend.id + '">' +
+          '<div class="friend-avatar">' +
+            (friend.photoURL ? '<img src="' + friend.photoURL + '" alt="">' : '👤') +
+          '</div>' +
+          '<div class="friend-info">' +
+            '<div class="friend-name">' + escapeHtml(friend.displayName || '익명') + '</div>' +
+            '<div class="friend-points">' + (friend.totalPoints || 0) + 'P</div>' +
+          '</div>' +
+          '<div class="friend-actions">' +
+            '<button class="remove-btn" onclick="removeFriendClick(\'' + friend.id + '\')">삭제</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      listEl.innerHTML = html;
+    } catch (error) {
+      console.error('친구 목록 로드 실패:', error);
+    }
+  }
+
+  // 전역 함수 (onclick에서 호출)
+  window.acceptRequest = async function(requestId) {
+    try {
+      await window.firebaseDB.acceptFriendRequest(requestId);
+      alert('친구 요청을 수락했습니다');
+      loadFriendRequests();
+      loadFriendList();
+    } catch (error) {
+      alert('오류: ' + error.message);
+    }
+  };
+
+  window.rejectRequest = async function(requestId) {
+    try {
+      await window.firebaseDB.rejectFriendRequest(requestId);
+      alert('친구 요청을 거절했습니다');
+      loadFriendRequests();
+    } catch (error) {
+      alert('오류: ' + error.message);
+    }
+  };
+
+  window.removeFriendClick = async function(friendId) {
+    if (!confirm('이 친구를 삭제하시겠습니까?')) return;
+
+    try {
+      await window.firebaseDB.removeFriend(friendId);
+      alert('친구가 삭제되었습니다');
+      loadFriendList();
+    } catch (error) {
+      alert('오류: ' + error.message);
+    }
+  };
 
   // ==========================================
   // 데이터 로드

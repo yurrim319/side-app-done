@@ -55,6 +55,49 @@
       </div>
     </section>
 
+    <!-- 친구 관리 섹션 (로그인 시에만 표시) -->
+    <section class="admin-section friend-section hidden" id="friend-section">
+      <h2 class="section-title">친구</h2>
+
+      <!-- 내 친구 코드 -->
+      <div class="friend-code-box">
+        <span class="friend-code-label">내 친구 코드</span>
+        <div class="friend-code-display">
+          <span class="friend-code" id="my-friend-code">------</span>
+          <button class="copy-btn" id="copy-friend-code" title="복사">📋</button>
+        </div>
+      </div>
+
+      <!-- 친구 추가 -->
+      <div class="add-friend-box">
+        <input type="text" class="friend-code-input" id="friend-code-input"
+               placeholder="친구 코드 입력" maxlength="6">
+        <button class="add-friend-btn" id="add-friend-btn">추가</button>
+      </div>
+
+      <!-- 받은 친구 요청 -->
+      <div class="friend-requests" id="friend-requests-container">
+        <h3 class="friend-subtitle">받은 요청 <span class="request-count" id="request-count"></span></h3>
+        <div class="friend-request-list" id="friend-request-list">
+          <!-- 동적으로 추가됨 -->
+        </div>
+        <div class="empty-requests hidden" id="empty-requests">
+          <p>받은 친구 요청이 없습니다</p>
+        </div>
+      </div>
+
+      <!-- 친구 목록 -->
+      <div class="friend-list-container">
+        <h3 class="friend-subtitle">내 친구 <span class="friend-count" id="friend-count"></span></h3>
+        <div class="friend-list" id="friend-list">
+          <!-- 동적으로 추가됨 -->
+        </div>
+        <div class="empty-friends hidden" id="empty-friends">
+          <p>아직 친구가 없습니다</p>
+        </div>
+      </div>
+    </section>
+
     <!-- 주간 활동 -->
     <section class="admin-section">
       <h2 class="section-title">주간 활동</h2>
@@ -114,6 +157,7 @@
     </div>
   </div>
 
+  <script type="module" src="js/firebase.js"></script>
   <script src="js/profile.js"></script>
 </body>
 </html>

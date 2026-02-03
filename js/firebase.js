@@ -1,7 +1,7 @@
 // Firebase 설정
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, getDocs, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, getDocs, updateDoc, increment, serverTimestamp, where, addDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAW3SZhfQ9XDdPyITe90NInI-gwxUFCkGw",
@@ -28,11 +28,50 @@ onAuthStateChanged(auth, (user) => {
   window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { user } }));
 });
 
+// 친구 코드 생성 (6자리 영숫자)
+function generateFriendCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 혼동되는 문자 제외 (0,O,1,I)
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// 고유한 친구 코드 생성 (중복 체크)
+async function createUniqueFriendCode() {
+  let code = generateFriendCode();
+  let attempts = 0;
+
+  while (attempts < 10) {
+    const q = query(collection(db, 'users'), where('friendCode', '==', code));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return code;
+    }
+    code = generateFriendCode();
+    attempts++;
+  }
+
+  // 10번 시도 후에도 실패하면 타임스탬프 추가
+  return code + Date.now().toString(36).slice(-2).toUpperCase();
+}
+
 // Google 로그인
 async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
+
+    // 기존 유저인지 확인
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    let friendCode = userDoc.exists() ? userDoc.data().friendCode : null;
+
+    // 신규 유저면 친구 코드 생성
+    if (!friendCode) {
+      friendCode = await createUniqueFriendCode();
+    }
 
     // Firestore에 유저 정보 저장/업데이트
     await setDoc(doc(db, 'users', user.uid), {
@@ -40,6 +79,8 @@ async function loginWithGoogle() {
       displayName: user.displayName,
       email: user.email,
       photoURL: user.photoURL,
+      friendCode: friendCode,
+      friends: userDoc.exists() ? (userDoc.data().friends || []) : [],
       lastLogin: serverTimestamp()
     }, { merge: true });
 
@@ -125,6 +166,178 @@ async function getMyRank() {
   return rank;
 }
 
+// ==================== 친구 기능 ====================
+
+// 내 프로필 정보 가져오기
+async function getMyProfile() {
+  if (!currentUser) return null;
+
+  const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+  if (!userDoc.exists()) return null;
+
+  return { id: userDoc.id, ...userDoc.data() };
+}
+
+// 친구 코드로 유저 찾기
+async function findUserByFriendCode(friendCode) {
+  const q = query(collection(db, 'users'), where('friendCode', '==', friendCode.toUpperCase()));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const userDoc = snapshot.docs[0];
+  return { id: userDoc.id, ...userDoc.data() };
+}
+
+// 친구 요청 보내기
+async function sendFriendRequest(toUserId) {
+  if (!currentUser) throw new Error('로그인이 필요합니다');
+  if (toUserId === currentUser.uid) throw new Error('자신에게 친구 요청을 보낼 수 없습니다');
+
+  // 이미 친구인지 확인
+  const myDoc = await getDoc(doc(db, 'users', currentUser.uid));
+  const myFriends = myDoc.data().friends || [];
+  if (myFriends.includes(toUserId)) {
+    throw new Error('이미 친구입니다');
+  }
+
+  // 이미 요청이 있는지 확인
+  const existingRequest = query(
+    collection(db, 'friendRequests'),
+    where('from', '==', currentUser.uid),
+    where('to', '==', toUserId),
+    where('status', '==', 'pending')
+  );
+  const existingSnapshot = await getDocs(existingRequest);
+  if (!existingSnapshot.empty) {
+    throw new Error('이미 친구 요청을 보냈습니다');
+  }
+
+  // 상대방이 나에게 이미 요청했는지 확인
+  const reverseRequest = query(
+    collection(db, 'friendRequests'),
+    where('from', '==', toUserId),
+    where('to', '==', currentUser.uid),
+    where('status', '==', 'pending')
+  );
+  const reverseSnapshot = await getDocs(reverseRequest);
+  if (!reverseSnapshot.empty) {
+    throw new Error('상대방이 이미 친구 요청을 보냈습니다. 받은 요청을 확인하세요.');
+  }
+
+  // 친구 요청 생성
+  await addDoc(collection(db, 'friendRequests'), {
+    from: currentUser.uid,
+    fromName: currentUser.displayName,
+    fromPhoto: currentUser.photoURL,
+    to: toUserId,
+    status: 'pending',
+    createdAt: serverTimestamp()
+  });
+
+  return true;
+}
+
+// 받은 친구 요청 목록
+async function getPendingFriendRequests() {
+  if (!currentUser) return [];
+
+  const q = query(
+    collection(db, 'friendRequests'),
+    where('to', '==', currentUser.uid),
+    where('status', '==', 'pending')
+  );
+
+  const snapshot = await getDocs(q);
+  const requests = [];
+
+  snapshot.forEach((doc) => {
+    requests.push({ id: doc.id, ...doc.data() });
+  });
+
+  return requests;
+}
+
+// 친구 요청 수락
+async function acceptFriendRequest(requestId) {
+  if (!currentUser) throw new Error('로그인이 필요합니다');
+
+  const requestDoc = await getDoc(doc(db, 'friendRequests', requestId));
+  if (!requestDoc.exists()) throw new Error('요청을 찾을 수 없습니다');
+
+  const request = requestDoc.data();
+  if (request.to !== currentUser.uid) throw new Error('권한이 없습니다');
+
+  // 양쪽 유저의 friends 배열에 서로 추가
+  await updateDoc(doc(db, 'users', currentUser.uid), {
+    friends: arrayUnion(request.from)
+  });
+
+  await updateDoc(doc(db, 'users', request.from), {
+    friends: arrayUnion(currentUser.uid)
+  });
+
+  // 요청 삭제
+  await deleteDoc(doc(db, 'friendRequests', requestId));
+
+  return true;
+}
+
+// 친구 요청 거절
+async function rejectFriendRequest(requestId) {
+  if (!currentUser) throw new Error('로그인이 필요합니다');
+
+  const requestDoc = await getDoc(doc(db, 'friendRequests', requestId));
+  if (!requestDoc.exists()) throw new Error('요청을 찾을 수 없습니다');
+
+  const request = requestDoc.data();
+  if (request.to !== currentUser.uid) throw new Error('권한이 없습니다');
+
+  // 요청 삭제
+  await deleteDoc(doc(db, 'friendRequests', requestId));
+
+  return true;
+}
+
+// 친구 목록 가져오기
+async function getFriends() {
+  if (!currentUser) return [];
+
+  const myDoc = await getDoc(doc(db, 'users', currentUser.uid));
+  if (!myDoc.exists()) return [];
+
+  const friendIds = myDoc.data().friends || [];
+  if (friendIds.length === 0) return [];
+
+  const friends = [];
+  for (const friendId of friendIds) {
+    const friendDoc = await getDoc(doc(db, 'users', friendId));
+    if (friendDoc.exists()) {
+      friends.push({ id: friendDoc.id, ...friendDoc.data() });
+    }
+  }
+
+  return friends;
+}
+
+// 친구 삭제
+async function removeFriend(friendId) {
+  if (!currentUser) throw new Error('로그인이 필요합니다');
+
+  // 양쪽에서 서로 삭제
+  await updateDoc(doc(db, 'users', currentUser.uid), {
+    friends: arrayRemove(friendId)
+  });
+
+  await updateDoc(doc(db, 'users', friendId), {
+    friends: arrayRemove(currentUser.uid)
+  });
+
+  return true;
+}
+
 // 전역으로 내보내기
 window.firebaseAuth = {
   loginWithGoogle,
@@ -139,7 +352,16 @@ window.firebaseDB = {
   updateUserPoints,
   updateUserStreak,
   getLeaderboard,
-  getMyRank
+  getMyRank,
+  // 친구 기능
+  getMyProfile,
+  findUserByFriendCode,
+  sendFriendRequest,
+  getPendingFriendRequests,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  getFriends,
+  removeFriend
 };
 
 // Firebase 로드 완료 알림
