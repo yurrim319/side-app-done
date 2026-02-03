@@ -390,6 +390,17 @@ if ('serviceWorker' in navigator) {
   window.deleteRepeatQuest = function(questId) {
     if (!confirm('이 반복 퀘스트를 삭제하시겠습니까?')) return;
 
+    // 삭제할 퀘스트 찾기
+    var quest = repeatQuests.find(function(q) { return q.id === questId; });
+    if (quest && quest.completedDates) {
+      // 완료된 횟수만큼 포인트 차감
+      var completedCount = Object.keys(quest.completedDates).length;
+      var pointsToSubtract = (quest.points || 20) * completedCount;
+      if (pointsToSubtract > 0) {
+        subtractServerPoints(pointsToSubtract);
+      }
+    }
+
     repeatQuests = repeatQuests.filter(function(q) { return q.id !== questId; });
     saveRepeatQuests();
     renderQuestManage();
@@ -399,6 +410,13 @@ if ('serviceWorker' in navigator) {
   // 일반 퀘스트 삭제
   window.deleteSingleQuest = function(questId) {
     if (!confirm('이 퀘스트를 삭제하시겠습니까?')) return;
+
+    // 삭제할 퀘스트 찾기
+    var quest = quests.find(function(q) { return q.id === questId; });
+    if (quest && quest.completed) {
+      // 완료된 퀘스트면 포인트 차감
+      subtractServerPoints(quest.points || 20);
+    }
 
     quests = quests.filter(function(q) { return q.id !== questId; });
     saveQuests();
@@ -1313,6 +1331,9 @@ if ('serviceWorker' in navigator) {
         points: repeatQuest.points || 20,
         image: imageBase64
       });
+
+      // 서버 포인트 추가
+      addServerPoints(repeatQuest.points || 20);
     } else {
       // 일반 퀘스트 완료 처리
       var quest = quests.find(function(q) { return q.id === questId; });
@@ -1338,6 +1359,9 @@ if ('serviceWorker' in navigator) {
         points: quest.points || 20,
         image: imageBase64
       });
+
+      // 서버 포인트 추가
+      addServerPoints(quest.points || 20);
     }
   }
 
@@ -1675,30 +1699,49 @@ if ('serviceWorker' in navigator) {
   }
 
   function syncUserPoints() {
-    // 로컬 포인트 계산
-    var singlePoints = quests.filter(function(q) { return q.completed; })
-      .reduce(function(sum, q) { return sum + q.points; }, 0);
-
-    var repeatPoints = 0;
-    repeatQuests.forEach(function(rq) {
-      if (rq.completedDates) {
-        var completedCount = Object.keys(rq.completedDates).length;
-        repeatPoints += rq.points * completedCount;
-      }
-    });
-
-    var totalPoints = singlePoints + repeatPoints;
+    // 스트릭만 로컬에서 계산
     var streak = calculateStreak();
 
-    // Firebase에 업데이트 (절대값으로 설정)
-    if (window.firebaseDB && window.firebaseDB.setUserPoints) {
-      window.firebaseDB.setUserPoints(totalPoints);
+    // Firebase에 스트릭 업데이트
+    if (window.firebaseDB && window.firebaseDB.updateUserStreak) {
       window.firebaseDB.updateUserStreak(streak);
     }
 
-    // UI 업데이트
-    var myPointsEl = document.getElementById('my-points');
-    if (myPointsEl) myPointsEl.textContent = totalPoints + ' P';
+    // 서버에서 포인트 가져와서 UI 업데이트
+    loadMyPointsFromServer();
+  }
+
+  // 서버에서 내 포인트 가져오기
+  async function loadMyPointsFromServer() {
+    if (!window.firebaseDB || !window.firebaseDB.getMyProfile) return;
+
+    try {
+      var profile = await window.firebaseDB.getMyProfile();
+      var myPointsEl = document.getElementById('my-points');
+      if (myPointsEl && profile) {
+        myPointsEl.textContent = (profile.totalPoints || 0) + ' P';
+      }
+    } catch (error) {
+      console.error('포인트 로드 실패:', error);
+    }
+  }
+
+  // 서버 포인트 증가
+  function addServerPoints(points) {
+    if (window.firebaseDB && window.firebaseDB.updateUserPoints) {
+      window.firebaseDB.updateUserPoints(points);
+      // UI 업데이트
+      setTimeout(loadMyPointsFromServer, 500);
+    }
+  }
+
+  // 서버 포인트 감소
+  function subtractServerPoints(points) {
+    if (window.firebaseDB && window.firebaseDB.updateUserPoints) {
+      window.firebaseDB.updateUserPoints(-points);
+      // UI 업데이트
+      setTimeout(loadMyPointsFromServer, 500);
+    }
   }
 
   function loadLeaderboard() {

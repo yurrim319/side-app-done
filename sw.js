@@ -1,4 +1,4 @@
-var CACHE_NAME = 'done-app-v6';
+var CACHE_NAME = 'done-app-v7';
 // GitHub Pages 서브디렉토리 지원을 위한 상대 경로 사용
 var basePath = self.location.pathname.replace(/\/sw\.js$/, '') || '.';
 var urlsToCache = [
