@@ -1670,10 +1670,15 @@ if ('serviceWorker' in navigator) {
     var listEl = document.getElementById('leaderboard-list');
     var myRankEl = document.getElementById('my-rank');
 
-    // 리더보드 로드
-    window.firebaseDB.getLeaderboard(10)
+    // 친구들만 포함된 리더보드 로드
+    window.firebaseDB.getFriendsLeaderboard()
       .then(function(leaderboard) {
         if (listEl) {
+          if (leaderboard.length === 0) {
+            listEl.innerHTML = '<div class="empty-leaderboard">친구를 추가해서 순위를 확인해보세요!</div>';
+            return;
+          }
+
           var html = leaderboard.map(function(user, index) {
             var rank = index + 1;
             var rankClass = 'leaderboard-item';
@@ -1704,8 +1709,8 @@ if ('serviceWorker' in navigator) {
         debugPanel.log('❌ Failed to load leaderboard: ' + error.message);
       });
 
-    // 내 순위 로드
-    window.firebaseDB.getMyRank()
+    // 친구들 중 내 순위 로드
+    window.firebaseDB.getMyRankAmongFriends()
       .then(function(rank) {
         if (myRankEl && rank) {
           myRankEl.textContent = '#' + rank;

@@ -322,6 +322,43 @@ async function getFriends() {
   return friends;
 }
 
+// 친구 리더보드 가져오기 (나 + 친구들만)
+async function getFriendsLeaderboard() {
+  if (!currentUser) return [];
+
+  // 내 정보 가져오기
+  const myDoc = await getDoc(doc(db, 'users', currentUser.uid));
+  if (!myDoc.exists()) return [];
+
+  const myData = { id: myDoc.id, ...myDoc.data() };
+  const friendIds = myData.friends || [];
+
+  // 친구 정보 가져오기
+  const leaderboard = [myData];
+
+  for (const friendId of friendIds) {
+    const friendDoc = await getDoc(doc(db, 'users', friendId));
+    if (friendDoc.exists()) {
+      leaderboard.push({ id: friendDoc.id, ...friendDoc.data() });
+    }
+  }
+
+  // 포인트 순으로 정렬
+  leaderboard.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+
+  return leaderboard;
+}
+
+// 친구들 중 내 순위
+async function getMyRankAmongFriends() {
+  if (!currentUser) return null;
+
+  const leaderboard = await getFriendsLeaderboard();
+  const myIndex = leaderboard.findIndex(user => user.id === currentUser.uid);
+
+  return myIndex !== -1 ? myIndex + 1 : null;
+}
+
 // 친구 삭제
 async function removeFriend(friendId) {
   if (!currentUser) throw new Error('로그인이 필요합니다');
@@ -361,7 +398,9 @@ window.firebaseDB = {
   acceptFriendRequest,
   rejectFriendRequest,
   getFriends,
-  removeFriend
+  removeFriend,
+  getFriendsLeaderboard,
+  getMyRankAmongFriends
 };
 
 // Firebase 로드 완료 알림
