@@ -789,6 +789,17 @@ if ('serviceWorker' in navigator) {
 
     if (addBtn && addModal) {
       addBtn.addEventListener('click', function() {
+        // 로그인 체크
+        if (window.firebaseAuth) {
+          var currentUser = window.firebaseAuth.getCurrentUser();
+          if (!currentUser) {
+            // 로그인되지 않은 경우 로그인 탭으로 이동
+            switchTab('leaderboard', true);
+            alert('퀘스트를 추가하려면 로그인이 필요합니다.');
+            return;
+          }
+        }
+
         // 오늘 날짜로 기본 설정
         var dateInput = document.getElementById('quest-date');
         if (dateInput) {
